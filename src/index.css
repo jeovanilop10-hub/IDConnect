@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-bg text-ink font-body antialiased;
+}
+
+::selection {
+  background: rgba(31, 75, 59, 0.18);
+}
+
+/* Card container — light, rounded, subtle border. Used as the primary
+   content container across all pages (replaces an earlier dark "ticket
+   stub" look with the clean panel style from the reference design). */
+.stub {
+  position: relative;
+  background: theme("colors.surface");
+  border: 1px solid theme("colors.border");
+  border-radius: 12px;
+}
+
+/* Muted info box with a label above a bold value — matches the
+   "Organización / ID de la organización / Usuarios activos" boxes. */
+.field-box {
+  @apply bg-surface-alt border border-border rounded-lg px-4 py-3;
+}
+.field-box .field-label {
+  @apply text-muted text-xs mb-1;
+}
+.field-box .field-value {
+  @apply text-ink font-semibold text-sm;
+}
+
+/* Dark section header bar — matches the "ACT T100 Subscription" banner. */
+.section-bar {
+  @apply bg-brand text-white font-semibold px-4 py-3 rounded-lg flex items-center justify-between;
+}
+
+/* Table with a colored header row — matches the Usuarios table. */
+.data-table {
+  @apply w-full text-sm border-separate;
+  border-spacing: 0;
+}
+.data-table thead th {
+  @apply bg-sage text-white text-left text-xs uppercase tracking-wide font-semibold px-4 py-3;
+}
+.data-table thead th:first-child {
+  border-top-left-radius: 8px;
+}
+.data-table thead th:last-child {
+  border-top-right-radius: 8px;
+}
+.data-table tbody tr:nth-child(even) {
+  @apply bg-surface-alt;
+}
+.data-table tbody td {
+  @apply px-4 py-3 border-b border-border;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: theme("colors.border");
+  border-radius: 999px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.input {
+  @apply bg-surface border border-border rounded px-3 py-1.5 text-sm text-ink;
+}
+.input:focus {
+  @apply outline-none border-brand/50 ring-1 ring-brand/20;
+}
