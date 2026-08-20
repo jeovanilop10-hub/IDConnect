@@ -19,6 +19,11 @@ import type {
   PublicFlow,
 } from "./types";
 
+// In production the frontend and backend are separate Render services, so API
+// calls must go to an absolute URL (see VITE_API_BASE_URL) rather than a
+// relative path — a same-origin rewrite proxy was tried first, but Render's
+// static site rewrites were unreliable for POST response bodies.
+const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 const BASE = "/fargo-sdk-example";
 const TOKEN_STORAGE_KEY = "fargo_portal_token";
 
@@ -50,7 +55,7 @@ async function request<T>(path: string, init?: RequestInit, base = BASE): Promis
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${base}${path}`, {
+  const res = await fetch(`${API_ORIGIN}${base}${path}`, {
     headers: { ...headers, ...(init?.headers as Record<string, string> | undefined) },
     ...init,
   });
