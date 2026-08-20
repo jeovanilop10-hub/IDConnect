@@ -160,6 +160,31 @@ export default function FlowBuilder() {
     }
   }
 
+  // Column headers the CSV upload expects: the identifier first, then one
+  // column per parameter name used across this flow's FIELDS steps (PHOTO
+  // steps are excluded — images aren't something you preload via CSV).
+  function preloadedTemplateColumns(): string[] {
+    const paramColumns = Array.from(
+      new Set(steps.filter((s) => s.type === "FIELDS").flatMap((s) => s.parameterNames ?? [])),
+    );
+    return [identifierLabel.trim() || "Identificador", ...paramColumns];
+  }
+
+  function downloadPreloadedTemplate() {
+    const headers = preloadedTemplateColumns();
+    const escapeCsv = (value: string) => (/[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value);
+    const csv = headers.map(escapeCsv).join(",") + "\r\n";
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `plantilla-datos-precargados-${(flowName || "flujo").replace(/\s+/g, "-")}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
   function loadFlows(pid: string) {
     setLoadingFlows(true);
     setFlowsError(null);
@@ -714,6 +739,22 @@ export default function FlowBuilder() {
                     className="input w-full"
                   />
                 </label>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={downloadPreloadedTemplate}
+                    className="text-xs text-brand hover:underline"
+                  >
+                    Descargar plantilla CSV
+                  </button>
+                  <p className="text-muted text-xs mt-1">
+                    Columnas: <code className="font-mono">{preloadedTemplateColumns().join(", ")}</code>
+                    {preloadedTemplateColumns().length === 1 && (
+                      <span> — agrega pasos de tipo "Campos" para que la plantilla incluya más columnas.</span>
+                    )}
+                  </p>
+                </div>
 
                 {!editingId ? (
                   <p className="text-muted text-xs">Guarda el flujo primero para poder cargar los datos precargados.</p>
