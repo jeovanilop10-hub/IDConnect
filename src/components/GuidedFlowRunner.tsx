@@ -11,6 +11,7 @@ export default function GuidedFlowRunner({
   submitJob,
   onBack,
   onSubmitted,
+  initialValues,
 }: {
   steps: FlowStep[];
   requestNameField?: string | null;
@@ -18,6 +19,10 @@ export default function GuidedFlowRunner({
   submitJob: (template: ProductionRequestTemplate) => Promise<string>;
   onBack: () => void;
   onSubmitted: (jobId: string) => void;
+  // Parameter name -> value pairs to pre-fill once the template loads (e.g.
+  // from the kiosk's identifier lookup) — the person still sees and can
+  // edit them like any other captured value, this only skips retyping.
+  initialValues?: Record<string, string>;
 }) {
   const [template, setTemplate] = useState<ProductionRequestTemplate | null>(null);
   const [configuring, setConfiguring] = useState(true);
@@ -36,7 +41,20 @@ export default function GuidedFlowRunner({
       setConfiguring(true);
       setConfigError(null);
       try {
-        const templateResult = await fetchTemplate();
+        let templateResult = await fetchTemplate();
+        if (initialValues && Object.keys(initialValues).length > 0) {
+          templateResult = {
+            ...templateResult,
+            services: (templateResult.services ?? []).map((s) => ({
+              ...s,
+              parameters: (s.parameters ?? []).map((p) => {
+                const name = p.parameter?.name;
+                const value = name ? initialValues[name] : undefined;
+                return value !== undefined ? { ...p, parameter: { ...p.parameter, value } } : p;
+              }),
+            })),
+          };
+        }
         if (!cancelled) setTemplate(templateResult);
       } catch (err: any) {
         if (!cancelled) setConfigError(err?.message ?? "No se pudo preparar la solicitud para este perfil.");

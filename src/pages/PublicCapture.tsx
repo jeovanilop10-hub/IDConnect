@@ -2,7 +2,7 @@ import { CSSProperties, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ErrorBanner, Loading } from "../components/Feedback";
 import GuidedFlowRunner from "../components/GuidedFlowRunner";
-import { publicFlowApi } from "../api/client";
+import { ApiError, publicFlowApi } from "../api/client";
 import { darkenHex, hexToRgbTriplet } from "../lib/color";
 import type { PublicFlow } from "../api/types";
 
@@ -18,6 +18,39 @@ export default function PublicCapture() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submittedJobId, setSubmittedJobId] = useState<string | null>(null);
+
+  // Kiosk identifier step (only shown when flow.identifierEnabled): asks
+  // for an ID and looks up admin-uploaded preloaded data to pre-fill the
+  // steps below, instead of the person retyping everything.
+  const [identified, setIdentified] = useState(false);
+  const [personIdInput, setPersonIdInput] = useState("");
+  const [identifying, setIdentifying] = useState(false);
+  const [identifyError, setIdentifyError] = useState<string | null>(null);
+  const [prefillValues, setPrefillValues] = useState<Record<string, string>>({});
+
+  async function handleIdentify() {
+    if (!personIdInput.trim()) return;
+    setIdentifying(true);
+    setIdentifyError(null);
+    try {
+      const values = await publicFlowApi.getPreloadedData(slug, personIdInput.trim());
+      setPrefillValues(values);
+      setIdentified(true);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) {
+        setIdentifyError("No encontramos datos precargados para ese identificador. Puedes continuar y llenar todo manualmente.");
+      } else {
+        setIdentifyError((err as any)?.message ?? "No se pudo buscar tus datos.");
+      }
+    } finally {
+      setIdentifying(false);
+    }
+  }
+
+  function continueWithoutPrefill() {
+    setPrefillValues({});
+    setIdentified(true);
+  }
 
   useEffect(() => {
     setLoading(true);
@@ -90,7 +123,46 @@ export default function PublicCapture() {
         {loading && <Loading label="Cargando" />}
         {error && <ErrorBanner message={error} />}
 
-        {!loading && !error && flow && !submittedJobId && (
+        {!loading && !error && flow && flow.identifierEnabled && !identified && !submittedJobId && (
+          <div>
+            <h2 className="font-display text-2xl font-bold text-ink mb-2">
+              {flow.identifierLabel || "Ingresa tu identificador"}
+            </h2>
+            <p className="text-muted text-sm mb-5">
+              Buscamos tus datos para llenar algunos campos automáticamente.
+            </p>
+            <input
+              value={personIdInput}
+              onChange={(e) => setPersonIdInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleIdentify()}
+              placeholder={flow.identifierLabel || "Identificador"}
+              autoFocus
+              className="input w-full mb-4"
+            />
+            {identifyError && (
+              <div className="mb-4">
+                <ErrorBanner message={identifyError} />
+              </div>
+            )}
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleIdentify}
+                disabled={identifying || !personIdInput.trim()}
+                className="bg-brand text-white font-semibold px-6 py-3 rounded-xl hover:bg-brand-dim transition-colors text-sm disabled:opacity-50 shadow-sm"
+              >
+                {identifying ? "Buscando…" : "Continuar"}
+              </button>
+              <button
+                onClick={continueWithoutPrefill}
+                className="text-muted hover:text-ink text-xs transition-colors"
+              >
+                Continuar sin datos precargados
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && flow && (!flow.identifierEnabled || identified) && !submittedJobId && (
           <GuidedFlowRunner
             steps={flow.steps}
             requestNameField={flow.requestNameField}
@@ -98,6 +170,7 @@ export default function PublicCapture() {
             submitJob={(template) => publicFlowApi.submitJob(slug, template)}
             onBack={() => window.history.back()}
             onSubmitted={(jobId) => setSubmittedJobId(jobId)}
+            initialValues={prefillValues}
           />
         )}
 

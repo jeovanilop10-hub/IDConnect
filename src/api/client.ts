@@ -17,6 +17,7 @@ import type {
   Role,
   FlowDefinition,
   PublicFlow,
+  PreloadedDataInfo,
 } from "./types";
 
 // In production the frontend and backend are separate Render services, so API
@@ -52,7 +53,10 @@ export function registerUnauthorizedHandler(handler: () => void) {
 
 async function request<T>(path: string, init?: RequestInit, base = BASE): Promise<T> {
   const token = getStoredToken();
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  // FormData bodies (file uploads) need the browser to set its own
+  // multipart boundary in Content-Type — forcing application/json breaks that.
+  const isFormData = init?.body instanceof FormData;
+  const headers: Record<string, string> = isFormData ? {} : { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const res = await fetch(`${API_ORIGIN}${base}${path}`, {
@@ -144,6 +148,13 @@ export const flowApi = {
   getDestinations: (id: number) => request<PrintDestination[]>(`/${id}/destinations`, undefined, "/flows"),
   save: (flow: FlowDefinition) => request<FlowDefinition>("", { method: "POST", body: JSON.stringify(flow) }, "/flows"),
   remove: (id: number) => request<void>(`/${id}`, { method: "DELETE" }, "/flows"),
+  uploadPreloadedData: (id: number, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request<PreloadedDataInfo>(`/${id}/preloaded-data`, { method: "POST", body: form }, "/flows");
+  },
+  getPreloadedDataInfo: (id: number) => request<PreloadedDataInfo>(`/${id}/preloaded-data`, undefined, "/flows"),
+  clearPreloadedData: (id: number) => request<void>(`/${id}/preloaded-data`, { method: "DELETE" }, "/flows"),
 };
 
 // Unauthenticated kiosk endpoints — reused `request()` works fine here since
@@ -157,6 +168,12 @@ export const publicFlowApi = {
     request<PrintDestination[]>(`/${encodeURIComponent(slug)}/destinations`, undefined, "/public/flows"),
   submitJob: (slug: string, template: ProductionRequestTemplate) =>
     request<string>(`/${encodeURIComponent(slug)}/jobs`, { method: "POST", body: JSON.stringify(template) }, "/public/flows"),
+  getPreloadedData: (slug: string, personId: string) =>
+    request<Record<string, string>>(
+      `/${encodeURIComponent(slug)}/preloaded/${encodeURIComponent(personId)}`,
+      undefined,
+      "/public/flows",
+    ),
 };
 
 export const jobApi = {

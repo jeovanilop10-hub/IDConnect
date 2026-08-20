@@ -249,6 +249,16 @@ export interface FlowDefinition {
   publicEnabled?: boolean;
   publicSlug?: string | null;
   theme?: FlowTheme | null;
+  // When true, the kiosk asks for this ID before its steps and pre-fills
+  // any FIELDS step whose parameter name matches an uploaded CSV column.
+  identifierEnabled?: boolean;
+  // Prompt shown on the kiosk's identifier screen, e.g. "Número de empleado".
+  identifierLabel?: string | null;
+}
+
+export interface PreloadedDataInfo {
+  recordCount: number;
+  columns: string[];
 }
 
 // What the unauthenticated /captura/{slug} screen is allowed to see.
@@ -257,4 +267,6 @@ export interface PublicFlow {
   steps: FlowStep[];
   theme?: FlowTheme | null;
   requestNameField?: string | null;
+  identifierEnabled?: boolean;
+  identifierLabel?: string | null;
 }

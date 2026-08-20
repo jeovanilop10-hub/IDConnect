@@ -4,7 +4,14 @@ import { ErrorBanner, Loading } from "../components/Feedback";
 import ProfileParameterField from "../components/ProfileParameterField";
 import { useAsync } from "../hooks/useAsync";
 import { flowApi, productionProfileApi, deviceApi } from "../api/client";
-import type { FlowDefinition, FlowStep, FlowStepType, PrintDestination, ProductionProfileParameter } from "../api/types";
+import type {
+  FlowDefinition,
+  FlowStep,
+  FlowStepType,
+  PreloadedDataInfo,
+  PrintDestination,
+  ProductionProfileParameter,
+} from "../api/types";
 import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
 
 interface AvailableField {
@@ -84,6 +91,17 @@ export default function FlowBuilder() {
   const [themeBackgroundColor, setThemeBackgroundColor] = useState(DEFAULT_BG);
   const [themeLogoText, setThemeLogoText] = useState("");
 
+  // Kiosk identifier step: asks for an ID before the flow's own steps and
+  // pre-fills matching FIELDS values from an admin-uploaded CSV (see
+  // PreloadedRecord on the backend). Requires the flow to already exist
+  // (editingId set) since the upload is scoped to a flow id.
+  const [identifierEnabled, setIdentifierEnabled] = useState(false);
+  const [identifierLabel, setIdentifierLabel] = useState("");
+  const [preloadedInfo, setPreloadedInfo] = useState<PreloadedDataInfo | null>(null);
+  const [loadingPreloadedInfo, setLoadingPreloadedInfo] = useState(false);
+  const [uploadingPreloaded, setUploadingPreloaded] = useState(false);
+  const [preloadedError, setPreloadedError] = useState<string | null>(null);
+
   function resetEditor() {
     setEditingId(undefined);
     setFlowName("");
@@ -96,9 +114,50 @@ export default function FlowBuilder() {
     setThemePrimaryColor(DEFAULT_PRIMARY);
     setThemeBackgroundColor(DEFAULT_BG);
     setThemeLogoText("");
+    setIdentifierEnabled(false);
+    setIdentifierLabel("");
+    setPreloadedInfo(null);
+    setPreloadedError(null);
     setAvailableFields(null);
     setSaved(false);
     setSaveError(null);
+  }
+
+  function loadPreloadedInfo(id: number) {
+    setLoadingPreloadedInfo(true);
+    flowApi
+      .getPreloadedDataInfo(id)
+      .then(setPreloadedInfo)
+      .catch(() => setPreloadedInfo(null))
+      .finally(() => setLoadingPreloadedInfo(false));
+  }
+
+  async function handleUploadPreloadedFile(file: File) {
+    if (!editingId) return;
+    setPreloadedError(null);
+    setUploadingPreloaded(true);
+    try {
+      const info = await flowApi.uploadPreloadedData(editingId, file);
+      setPreloadedInfo(info);
+    } catch (err: any) {
+      setPreloadedError(err?.message ?? "No se pudo cargar el archivo.");
+    } finally {
+      setUploadingPreloaded(false);
+    }
+  }
+
+  async function handleClearPreloadedData() {
+    if (!editingId) return;
+    setPreloadedError(null);
+    setUploadingPreloaded(true);
+    try {
+      await flowApi.clearPreloadedData(editingId);
+      setPreloadedInfo({ recordCount: 0, columns: [] });
+    } catch (err: any) {
+      setPreloadedError(err?.message ?? "No se pudieron borrar los datos precargados.");
+    } finally {
+      setUploadingPreloaded(false);
+    }
   }
 
   function loadFlows(pid: string) {
@@ -156,6 +215,11 @@ export default function FlowBuilder() {
     setThemePrimaryColor(flow.theme?.primaryColor || DEFAULT_PRIMARY);
     setThemeBackgroundColor(flow.theme?.backgroundColor || DEFAULT_BG);
     setThemeLogoText(flow.theme?.logoText ?? "");
+    setIdentifierEnabled(flow.identifierEnabled ?? false);
+    setIdentifierLabel(flow.identifierLabel ?? "");
+    setPreloadedInfo(null);
+    setPreloadedError(null);
+    if (flow.id) loadPreloadedInfo(flow.id);
     setAvailableFields(null);
     setSaved(false);
     setSaveError(null);
@@ -241,11 +305,14 @@ export default function FlowBuilder() {
           backgroundColor: themeBackgroundColor,
           logoText: themeLogoText || null,
         },
+        identifierEnabled,
+        identifierLabel: identifierLabel || null,
       });
       setEditingId(result.id);
       setSavedSlug(result.publicSlug ?? null);
       setSaved(true);
       loadFlows(profileId);
+      if (!preloadedInfo && result.id) loadPreloadedInfo(result.id);
     } catch (err: any) {
       setSaveError(err?.message ?? "No se pudo guardar el flujo.");
     } finally {
@@ -620,6 +687,90 @@ export default function FlowBuilder() {
               </label>
             </div>
           )}
+
+          <div className="pt-4 border-t border-border">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={identifierEnabled}
+                onChange={(e) => setIdentifierEnabled(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <span className="text-sm text-ink">Pedir un identificador al inicio del kiosco (datos precargados)</span>
+            </label>
+            <p className="text-muted text-xs mt-1 mb-3">
+              Antes de sus pasos, el kiosco pedirá este dato y buscará una fila cargada por CSV para rellenar
+              automáticamente los campos que coincidan por nombre.
+            </p>
+
+            {identifierEnabled && (
+              <div className="space-y-3">
+                <label className="block max-w-xs">
+                  <span className="block text-xs text-muted mb-1">Texto mostrado en el kiosco</span>
+                  <input
+                    value={identifierLabel}
+                    onChange={(e) => setIdentifierLabel(e.target.value)}
+                    placeholder="Número de empleado"
+                    className="input w-full"
+                  />
+                </label>
+
+                {!editingId ? (
+                  <p className="text-muted text-xs">Guarda el flujo primero para poder cargar los datos precargados.</p>
+                ) : (
+                  <div className="field-box max-w-md">
+                    <p className="field-label mb-2">Datos precargados (CSV)</p>
+                    {loadingPreloadedInfo ? (
+                      <Loading label="Cargando estado" />
+                    ) : preloadedInfo && preloadedInfo.recordCount > 0 ? (
+                      <p className="text-sm text-ink mb-2">
+                        <strong>{preloadedInfo.recordCount}</strong> registro(s) cargado(s)
+                        {preloadedInfo.columns.length > 0 && (
+                          <span className="text-muted"> · columnas: {preloadedInfo.columns.join(", ")}</span>
+                        )}
+                      </p>
+                    ) : (
+                      <p className="text-muted text-xs mb-2">No hay datos cargados todavía.</p>
+                    )}
+                    <p className="text-muted text-xs mb-2">
+                      La primera columna del CSV debe ser el identificador que la persona escribirá en el kiosco; las
+                      demás columnas deben llamarse igual que los nombres de parámetro usados en los pasos de este
+                      flujo.
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="file"
+                        accept=".csv,text/csv"
+                        disabled={uploadingPreloaded}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleUploadPreloadedFile(file);
+                          e.target.value = "";
+                        }}
+                        className="text-xs"
+                      />
+                      {preloadedInfo && preloadedInfo.recordCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleClearPreloadedData}
+                          disabled={uploadingPreloaded}
+                          className="text-xs text-muted hover:text-danger transition-colors disabled:opacity-50"
+                        >
+                          Borrar datos
+                        </button>
+                      )}
+                    </div>
+                    {uploadingPreloaded && <p className="text-muted text-xs mt-2">Procesando…</p>}
+                    {preloadedError && (
+                      <div className="mt-2">
+                        <ErrorBanner message={preloadedError} />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {saveError && <ErrorBanner message={saveError} />}
           {saved && <p className="text-success text-sm">✓ Flujo guardado correctamente.</p>}
