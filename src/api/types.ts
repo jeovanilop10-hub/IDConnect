@@ -159,6 +159,12 @@ export interface ProductionRequestTemplate extends WithExtras {
   services?: CardRequestServiceData[];
 }
 
+export interface JobResource extends WithExtras {
+  resourceKey?: string;
+  resourceType?: string;
+  contentType?: string;
+}
+
 export interface Job extends WithExtras {
   deviceUniqueId?: string;
   locationUniqueId?: string;
@@ -170,12 +176,14 @@ export interface Job extends WithExtras {
   jobDeletionMessage?: string;
   submitDate?: string;
   lastUpdate?: string;
+  jobResources?: JobResource[];
 }
 
 export interface JobImageResource extends WithExtras {
   jobUniqueId?: string;
   resourceKey?: string;
   imageType?: string;
+  imageData?: string;
 }
 
 export interface ApiError {

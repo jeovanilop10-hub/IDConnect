@@ -6,6 +6,12 @@ import { jobApi } from "../api/client";
 import { formatLocalDateTime } from "../lib/date";
 import { useState } from "react";
 
+/** HID's imageType is a bare format name (e.g. "JPEG"); pass through anything that already looks like a MIME type. */
+function imageMimeType(imageType?: string): string {
+  if (!imageType) return "image/jpeg";
+  return imageType.includes("/") ? imageType : `image/${imageType.toLowerCase()}`;
+}
+
 export default function JobDetail() {
   const { jobId = "" } = useParams();
   const { data: job, loading, error, reload } = useAsync(() => jobApi.get(jobId), [jobId]);
@@ -60,8 +66,30 @@ export default function JobDetail() {
 
           <div className="stub p-5">
             <p className="text-brand text-xs font-semibold uppercase tracking-wide mb-3">
-              Recurso de imagen del trabajo
+              Recursos de imagen del trabajo
             </p>
+
+            {(job.jobResources?.length ?? 0) > 0 ? (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {job.jobResources!.map((r) => (
+                  <button
+                    key={r.resourceKey}
+                    onClick={() => setResourceKey(r.resourceKey ?? "")}
+                    className={`px-3 py-1.5 rounded-lg text-sm border transition-colors ${
+                      resourceKey === r.resourceKey
+                        ? "border-brand bg-brand/10 text-brand font-medium"
+                        : "border-border hover:border-brand/50"
+                    }`}
+                  >
+                    {r.resourceKey}
+                    {r.resourceType && <span className="text-muted ml-1.5">({r.resourceType})</span>}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted text-sm mb-4">Este trabajo no reporta recursos de imagen.</p>
+            )}
+
             <div className="flex items-end gap-3">
               <label className="block text-xs text-muted flex-1">
                 <span className="block mb-1">Resource key</span>
@@ -83,7 +111,18 @@ export default function JobDetail() {
             {loadingResource && <Loading label="Cargando recurso" />}
             {resourceError && <ErrorBanner message={resourceError} />}
             {resource && (
-              <div className="mt-4">
+              <div className="mt-4 space-y-3">
+                {resource.imageData ? (
+                  <img
+                    src={`data:${imageMimeType(resource.imageType)};base64,${resource.imageData}`}
+                    alt={resource.resourceKey ?? "Recurso de imagen"}
+                    className="max-w-xs rounded-lg border border-border"
+                  />
+                ) : (
+                  <p className="text-muted text-sm">
+                    La respuesta no incluyó datos de imagen (`imageData`) para mostrar.
+                  </p>
+                )}
                 <JsonPreview data={resource} />
               </div>
             )}
