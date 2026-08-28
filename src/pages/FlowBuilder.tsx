@@ -706,7 +706,7 @@ export default function FlowBuilder() {
                 <input
                   value={themeLogoText}
                   onChange={(e) => setThemeLogoText(e.target.value)}
-                  placeholder="ID Connect"
+                  placeholder="ID Issuance"
                   className="input w-full"
                 />
               </label>

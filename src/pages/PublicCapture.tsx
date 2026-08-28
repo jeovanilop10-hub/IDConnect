@@ -6,7 +6,7 @@ import { ApiError, publicFlowApi } from "../api/client";
 import { darkenHex, hexToRgbTriplet } from "../lib/color";
 import type { PublicFlow } from "../api/types";
 
-// The "ID Connect" kiosk brand — applied by default to every public capture
+// The "ID Issuance" kiosk brand — applied by default to every public capture
 // screen, independently of whichever flow is loaded. A flow's own theme
 // (set in the flow builder) overrides these on top, per-flow.
 const KIOSK_DEFAULT_PRIMARY = "#2E4A46";
@@ -98,30 +98,25 @@ export default function PublicCapture() {
             {theme.logoText}
           </span>
         ) : (
-          // The logo is a flat PNG (colors baked into the pixels), so a
-          // Tailwind color class can't recolor it. Using it as a CSS mask
-          // instead lets us fill its exact silhouette with each flow's own
-          // primary color, so the logo's color genuinely follows the
-          // configured palette rather than an approximate filter.
-          <div
+          // Vector wordmark (not a flat PNG) so it recolors exactly to each
+          // flow's own primary color via `color`/currentColor, instead of
+          // being stuck with whatever a pre-baked image happened to ship with.
+          <svg
+            viewBox="0 0 340 72"
             role="img"
-            aria-label="ID Connect"
+            aria-label="ID Issuance"
             className="h-10 sm:h-12 w-auto"
-            style={
-              {
-                aspectRatio: "590 / 138",
-                backgroundColor: primaryColor,
-                WebkitMaskImage: "url(/id-connect-logo-mask.png)",
-                maskImage: "url(/id-connect-logo-mask.png)",
-                WebkitMaskSize: "contain",
-                maskSize: "contain",
-                WebkitMaskRepeat: "no-repeat",
-                maskRepeat: "no-repeat",
-                WebkitMaskPosition: "center",
-                maskPosition: "center",
-              } as CSSProperties
-            }
-          />
+            style={{ color: primaryColor }}
+          >
+            <rect x="2" y="10" width="70" height="52" rx="10" fill="currentColor" />
+            <circle cx="24" cy="30" r="8" fill="white" fillOpacity="0.9" />
+            <rect x="38" y="24" width="24" height="5" rx="2.5" fill="white" fillOpacity="0.85" />
+            <rect x="38" y="34" width="24" height="5" rx="2.5" fill="white" fillOpacity="0.6" />
+            <rect x="14" y="46" width="46" height="5" rx="2.5" fill="white" fillOpacity="0.5" />
+            <text x="88" y="47" fontFamily="Poppins, Inter, sans-serif" fontWeight="700" fontSize="34" fill="currentColor">
+              ID Issuance
+            </text>
+          </svg>
         )}
       </div>
 
