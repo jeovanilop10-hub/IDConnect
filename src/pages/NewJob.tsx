@@ -82,11 +82,15 @@ export default function NewJob() {
     }
   }
 
+  // First column is the identifier the person can later type at the kiosk
+  // to self-serve this same row — same convention as the admin's "Datos
+  // precargados" template, so both CSVs share a shape.
   function pendingTemplateColumns(): string[] {
     if (!selectedGrantedFlow) return [];
-    return Array.from(
+    const paramColumns = Array.from(
       new Set(selectedGrantedFlow.steps.filter((s) => s.type === "FIELDS").flatMap((s) => s.parameterNames ?? [])),
     );
+    return [selectedGrantedFlow.identifierLabel?.trim() || "Identificador", ...paramColumns];
   }
 
   function downloadPendingTemplate() {
@@ -341,7 +345,9 @@ export default function NewJob() {
                 </button>
               </div>
               <p className="text-muted text-xs mb-3">
-                Columnas: <code className="font-mono">{pendingTemplateColumns().join(", ") || "(este flujo no tiene pasos de tipo Campos)"}</code>
+                Columnas: <code className="font-mono">{pendingTemplateColumns().join(", ")}</code> — la primera es el
+                identificador con el que la persona podrá autoservirse en el kiosco (si este flujo lo tiene
+                habilitado).
               </p>
               {uploadingPending && <p className="text-muted text-xs mb-3">Procesando…</p>}
               {pendingError && (
@@ -364,6 +370,7 @@ export default function NewJob() {
                         onClick={() => setActivePending(item)}
                         className="w-full text-left px-4 py-3 rounded-lg border border-border hover:border-brand/40 hover:bg-brand/5 transition-colors"
                       >
+                        {item.personId && <p className="text-muted text-xs font-mono">{item.personId}</p>}
                         <p className="text-ink text-sm truncate">{summary}</p>
                       </button>
                     );

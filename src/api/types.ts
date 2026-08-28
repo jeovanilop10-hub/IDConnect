@@ -264,10 +264,20 @@ export interface PreloadedDataInfo {
 }
 
 // One row of an uploaded "pending jobs" CSV for a flow — worked through one
-// at a time and removed once a job is submitted from it.
+// at a time (from the portal, or self-service at the kiosk via personId) and
+// removed once a job is submitted from it.
 export interface PendingJobItem {
   id: number;
+  personId?: string | null;
   values: Record<string, string>;
+}
+
+// What the kiosk's identifier lookup returns. pendingItemId is set only when
+// the match came from a PendingJobItem (not the admin's PreloadedRecord) —
+// pass it back on submit so that row gets removed.
+export interface PublicPreloadedData {
+  values: Record<string, string>;
+  pendingItemId?: number | null;
 }
 
 // What the unauthenticated /captura/{slug} screen is allowed to see.

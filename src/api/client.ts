@@ -19,6 +19,7 @@ import type {
   PublicFlow,
   PreloadedDataInfo,
   PendingJobItem,
+  PublicPreloadedData,
 } from "./types";
 
 // In production the frontend and backend are separate Render services, so API
@@ -184,10 +185,14 @@ export const publicFlowApi = {
     request<ProductionRequestTemplate>(`/${encodeURIComponent(slug)}/template`, undefined, "/public/flows"),
   getDestinations: (slug: string) =>
     request<PrintDestination[]>(`/${encodeURIComponent(slug)}/destinations`, undefined, "/public/flows"),
-  submitJob: (slug: string, template: ProductionRequestTemplate) =>
-    request<string>(`/${encodeURIComponent(slug)}/jobs`, { method: "POST", body: JSON.stringify(template) }, "/public/flows"),
+  submitJob: (slug: string, template: ProductionRequestTemplate, pendingItemId?: number) =>
+    request<string>(
+      `/${encodeURIComponent(slug)}/jobs${pendingItemId != null ? `?pendingItemId=${pendingItemId}` : ""}`,
+      { method: "POST", body: JSON.stringify(template) },
+      "/public/flows",
+    ),
   getPreloadedData: (slug: string, personId: string) =>
-    request<Record<string, string>>(
+    request<PublicPreloadedData>(
       `/${encodeURIComponent(slug)}/preloaded/${encodeURIComponent(personId)}`,
       undefined,
       "/public/flows",

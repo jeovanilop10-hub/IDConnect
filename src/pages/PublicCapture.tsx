@@ -27,14 +27,19 @@ export default function PublicCapture() {
   const [identifying, setIdentifying] = useState(false);
   const [identifyError, setIdentifyError] = useState<string | null>(null);
   const [prefillValues, setPrefillValues] = useState<Record<string, string>>({});
+  // Set only when the match came from an OPERATIONAL user's "Trabajos
+  // pendientes" queue (not the admin's preloaded data) — sent back on submit
+  // so that row is removed, same as when it's processed from the portal.
+  const [pendingItemId, setPendingItemId] = useState<number | undefined>(undefined);
 
   async function handleIdentify() {
     if (!personIdInput.trim()) return;
     setIdentifying(true);
     setIdentifyError(null);
     try {
-      const values = await publicFlowApi.getPreloadedData(slug, personIdInput.trim());
-      setPrefillValues(values);
+      const result = await publicFlowApi.getPreloadedData(slug, personIdInput.trim());
+      setPrefillValues(result.values);
+      setPendingItemId(result.pendingItemId ?? undefined);
       setIdentified(true);
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
@@ -49,6 +54,7 @@ export default function PublicCapture() {
 
   function continueWithoutPrefill() {
     setPrefillValues({});
+    setPendingItemId(undefined);
     setIdentified(true);
   }
 
@@ -167,7 +173,7 @@ export default function PublicCapture() {
             steps={flow.steps}
             requestNameField={flow.requestNameField}
             fetchTemplate={() => publicFlowApi.getTemplate(slug)}
-            submitJob={(template) => publicFlowApi.submitJob(slug, template)}
+            submitJob={(template) => publicFlowApi.submitJob(slug, template, pendingItemId)}
             onBack={() => window.history.back()}
             onSubmitted={(jobId) => setSubmittedJobId(jobId)}
             initialValues={prefillValues}
