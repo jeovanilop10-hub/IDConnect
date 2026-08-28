@@ -74,7 +74,7 @@ export default function App() {
         <Route
           path="/trabajos"
           element={
-            <ProtectedRoute allow={["ADMIN", "OPERATOR", "CLIENT"]}>
+            <ProtectedRoute allow={["ADMIN", "OPERATOR", "CLIENT", "OPERATIONAL"]}>
               <Jobs />
             </ProtectedRoute>
           }
@@ -82,7 +82,7 @@ export default function App() {
         <Route
           path="/trabajos/:jobId"
           element={
-            <ProtectedRoute allow={["ADMIN", "OPERATOR", "CLIENT"]}>
+            <ProtectedRoute allow={["ADMIN", "OPERATOR", "CLIENT", "OPERATIONAL"]}>
               <JobDetail />
             </ProtectedRoute>
           }

@@ -26,7 +26,7 @@ const CARDS: { to: string; label: string; desc: string; roles: Role[] }[] = [
     to: "/trabajos",
     label: "Trabajos",
     desc: "Historial de trabajos de impresión por periodo o rango de fechas.",
-    roles: ["ADMIN", "OPERATOR", "CLIENT"],
+    roles: ["ADMIN", "OPERATOR", "CLIENT", "OPERATIONAL"],
   },
 ];
 

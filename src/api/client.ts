@@ -196,8 +196,10 @@ export const jobApi = {
   imageResource: (jobUniqueId: string, resourceKey: string) =>
     request<JobImageResource>(`/job/${jobUniqueId}/${resourceKey}`),
   createUniqueId: () => request<string>("/job/createUniqueId"),
-  submit: (template: ProductionRequestTemplate) =>
-    request<string>("/job", {
+  // flowId (when the job came from a FlowDefinition) gets recorded server-side
+  // so OPERATIONAL users can later see jobs from flows they're granted.
+  submit: (template: ProductionRequestTemplate, flowId?: number) =>
+    request<string>(`/job${flowId != null ? `?flowId=${flowId}` : ""}`, {
       method: "POST",
       body: JSON.stringify(template),
     }),

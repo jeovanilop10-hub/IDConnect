@@ -193,21 +193,12 @@ export default function NewJob() {
         <div className="stub p-6 border-success/40">
           <p className="text-success font-medium mb-1">✓ Trabajo enviado correctamente</p>
           <p className="font-mono text-sm text-muted mb-4">{submittedJobId}</p>
-          {isOperational ? (
-            <button
-              onClick={() => setSubmittedJobId(null)}
-              className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm"
-            >
-              Enviar otra solicitud →
-            </button>
-          ) : (
-            <button
-              onClick={() => navigate(`/trabajos/${encodeURIComponent(submittedJobId)}`)}
-              className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm"
-            >
-              Ver detalle del trabajo →
-            </button>
-          )}
+          <button
+            onClick={() => navigate(`/trabajos/${encodeURIComponent(submittedJobId)}`)}
+            className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm"
+          >
+            Ver detalle del trabajo →
+          </button>
         </div>
       </div>
     );
@@ -269,7 +260,7 @@ export default function NewJob() {
             steps={selectedGrantedFlow.steps}
             requestNameField={selectedGrantedFlow.requestNameField}
             fetchTemplate={() => flowApi.getTemplate(selectedGrantedFlow.id!)}
-            submitJob={(template) => jobApi.submit(template)}
+            submitJob={(template) => jobApi.submit(template, selectedGrantedFlow.id)}
             onBack={() => (grantedFlows.length > 1 ? setSelectedGrantedFlow(null) : navigate("/"))}
             onSubmitted={(jobId) => setSubmittedJobId(jobId)}
           />
@@ -289,7 +280,7 @@ export default function NewJob() {
             steps={selectedFlow.steps}
             requestNameField={selectedFlow.requestNameField}
             fetchTemplate={() => flowApi.getTemplate(selectedFlow.id!)}
-            submitJob={(template) => jobApi.submit(template)}
+            submitJob={(template) => jobApi.submit(template, selectedFlow.id)}
             onBack={() => (availableFlows && availableFlows.length > 1 ? setSelectedFlow(null) : setStep(2))}
             onSubmitted={(jobId) => setSubmittedJobId(jobId)}
           />
