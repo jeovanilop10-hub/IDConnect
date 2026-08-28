@@ -29,6 +29,25 @@ export default function NewJob() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isClient = user?.role === "CLIENT";
+  const isOperational = user?.role === "OPERATIONAL";
+
+  // OPERATIONAL skips organization/profile entirely — it has neither an org
+  // scope (like CLIENT) nor open access to every profile (like OPERATOR); it
+  // only ever sees the specific flows an admin granted it (see /flows/granted).
+  const [grantedFlows, setGrantedFlows] = useState<FlowDefinition[] | undefined>(undefined);
+  const [selectedGrantedFlow, setSelectedGrantedFlow] = useState<FlowDefinition | null>(null);
+
+  useEffect(() => {
+    if (!isOperational) return;
+    flowApi
+      .granted()
+      .then((flows) => {
+        setGrantedFlows(flows);
+        if (flows.length === 1) setSelectedGrantedFlow(flows[0]);
+      })
+      .catch(() => setGrantedFlows([]));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [step, setStep] = useState<Step>(isClient ? 2 : 1);
   const [organizationId, setOrganizationId] = useState(isClient ? user?.organizationId ?? "" : "");
@@ -174,12 +193,86 @@ export default function NewJob() {
         <div className="stub p-6 border-success/40">
           <p className="text-success font-medium mb-1">✓ Trabajo enviado correctamente</p>
           <p className="font-mono text-sm text-muted mb-4">{submittedJobId}</p>
-          <button
-            onClick={() => navigate(`/trabajos/${encodeURIComponent(submittedJobId)}`)}
-            className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm"
-          >
-            Ver detalle del trabajo →
-          </button>
+          {isOperational ? (
+            <button
+              onClick={() => setSubmittedJobId(null)}
+              className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm"
+            >
+              Enviar otra solicitud →
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate(`/trabajos/${encodeURIComponent(submittedJobId)}`)}
+              className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm"
+            >
+              Ver detalle del trabajo →
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (isOperational) {
+    if (grantedFlows === undefined) {
+      return (
+        <div>
+          <PageHeader eyebrow="Nuevo trabajo" title="Nuevo trabajo de impresión" />
+          <div className="stub p-6">
+            <Loading label="Cargando tus flujos" />
+          </div>
+        </div>
+      );
+    }
+
+    if (grantedFlows.length === 0) {
+      return (
+        <div>
+          <PageHeader eyebrow="Nuevo trabajo" title="Nuevo trabajo de impresión" />
+          <div className="stub p-6">
+            <p className="text-muted text-sm">
+              Todavía no tienes ningún flujo habilitado. Pide a un administrador que te dé acceso a uno desde
+              "Usuarios".
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (!selectedGrantedFlow) {
+      return (
+        <div>
+          <PageHeader eyebrow="Nuevo trabajo" title="Elige un flujo" />
+          <div className="stub p-6">
+            <div className="space-y-2 max-w-md">
+              {grantedFlows.map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setSelectedGrantedFlow(f)}
+                  className="w-full text-left px-4 py-3 rounded-lg border border-border hover:border-brand/40 hover:bg-brand/5 transition-colors"
+                >
+                  <p className="font-medium text-ink">{f.name}</p>
+                  <p className="text-muted text-xs">{f.steps.length} paso(s)</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <PageHeader eyebrow="Solicitud guiada" title={selectedGrantedFlow.name} />
+        <div className="stub p-6">
+          <GuidedFlowRunner
+            steps={selectedGrantedFlow.steps}
+            requestNameField={selectedGrantedFlow.requestNameField}
+            fetchTemplate={() => flowApi.getTemplate(selectedGrantedFlow.id!)}
+            submitJob={(template) => jobApi.submit(template)}
+            onBack={() => (grantedFlows.length > 1 ? setSelectedGrantedFlow(null) : navigate("/"))}
+            onSubmitted={(jobId) => setSubmittedJobId(jobId)}
+          />
         </div>
       </div>
     );

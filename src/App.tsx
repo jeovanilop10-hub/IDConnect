@@ -47,7 +47,14 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/perfiles" element={<ProductionProfiles />} />
+        <Route
+          path="/perfiles"
+          element={
+            <ProtectedRoute allow={["ADMIN", "OPERATOR", "CLIENT"]}>
+              <ProductionProfiles />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/flujos"
           element={
@@ -64,8 +71,22 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/trabajos" element={<Jobs />} />
-        <Route path="/trabajos/:jobId" element={<JobDetail />} />
+        <Route
+          path="/trabajos"
+          element={
+            <ProtectedRoute allow={["ADMIN", "OPERATOR", "CLIENT"]}>
+              <Jobs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trabajos/:jobId"
+          element={
+            <ProtectedRoute allow={["ADMIN", "OPERATOR", "CLIENT"]}>
+              <JobDetail />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/nuevo-trabajo" element={<NewJob />} />
         <Route
           path="/usuarios"

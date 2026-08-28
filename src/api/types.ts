@@ -191,7 +191,7 @@ export interface ApiError {
   message?: string;
 }
 
-export type Role = "ADMIN" | "OPERATOR" | "CLIENT";
+export type Role = "ADMIN" | "OPERATOR" | "CLIENT" | "OPERATIONAL";
 
 export interface AuthUser {
   username: string;
@@ -209,6 +209,8 @@ export interface PortalUser {
   role: Role;
   organizationId?: string | null;
   enabled: boolean;
+  // Only meaningful for role === "OPERATIONAL" — the flow ids this user was granted.
+  flowIds?: number[];
 }
 
 export type FlowStepType = "INFO" | "PHOTO" | "FIELDS";

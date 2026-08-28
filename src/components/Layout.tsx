@@ -28,7 +28,7 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { to: "/", label: "Resumen", icon: LayoutGrid, end: true, roles: ["ADMIN", "OPERATOR", "CLIENT"] },
+  { to: "/", label: "Resumen", icon: LayoutGrid, end: true, roles: ["ADMIN", "OPERATOR", "CLIENT", "OPERATIONAL"] },
   { to: "/organizaciones", label: "Organizaciones", icon: Building2, roles: ["ADMIN", "OPERATOR"] },
   { to: "/dispositivos", label: "Dispositivos", icon: Printer, roles: ["ADMIN", "OPERATOR"] },
   { to: "/perfiles", label: "Perfiles de producción", icon: FileText, roles: ["ADMIN", "OPERATOR", "CLIENT"] },
@@ -36,7 +36,13 @@ const NAV: NavItem[] = [
   { to: "/flujos", label: "Constructor de flujos", icon: Workflow, roles: ["ADMIN", "OPERATOR"] },
   { to: "/captura", label: "Captura pública", icon: Monitor, roles: ["ADMIN", "OPERATOR"] },
   { to: "/usuarios", label: "Usuarios", icon: UsersIcon, roles: ["ADMIN"] },
-  { to: "/nuevo-trabajo", label: "Nuevo trabajo", icon: Plus, accent: true, roles: ["ADMIN", "OPERATOR", "CLIENT"] },
+  {
+    to: "/nuevo-trabajo",
+    label: "Nuevo trabajo",
+    icon: Plus,
+    accent: true,
+    roles: ["ADMIN", "OPERATOR", "CLIENT", "OPERATIONAL"],
+  },
 ];
 
 export default function Layout() {

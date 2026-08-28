@@ -1,30 +1,39 @@
 import { Link } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { useAuth } from "../auth/AuthContext";
+import type { Role } from "../api/types";
 
-const CARDS = [
+const CARDS: { to: string; label: string; desc: string; roles: Role[] }[] = [
   {
     to: "/organizaciones",
     label: "Organizaciones",
     desc: "Unidades organizacionales y ubicaciones registradas en Fargo Connect.",
+    roles: ["ADMIN", "OPERATOR"],
   },
   {
     to: "/dispositivos",
     label: "Dispositivos",
     desc: "Impresoras y destinos de impresión disponibles, con sus certificados públicos.",
+    roles: ["ADMIN", "OPERATOR"],
   },
   {
     to: "/perfiles",
     label: "Perfiles de producción",
     desc: "Plantillas de emisión de tarjetas y sus parámetros configurables.",
+    roles: ["ADMIN", "OPERATOR", "CLIENT"],
   },
   {
     to: "/trabajos",
     label: "Trabajos",
     desc: "Historial de trabajos de impresión por periodo o rango de fechas.",
+    roles: ["ADMIN", "OPERATOR", "CLIENT"],
   },
 ];
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const cards = CARDS.filter((c) => !user || c.roles.includes(user.role));
+
   return (
     <div>
       <PageHeader
@@ -34,7 +43,7 @@ export default function Dashboard() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-        {CARDS.map((c) => (
+        {cards.map((c) => (
           <Link
             key={c.to}
             to={c.to}

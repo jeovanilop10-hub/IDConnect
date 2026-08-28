@@ -133,13 +133,22 @@ export const authApi = {
 
 export const userApi = {
   list: () => request<PortalUser[]>("", undefined, "/users"),
-  create: (input: { username: string; password: string; role: Role; organizationId?: string }) =>
-    request<PortalUser>("", { method: "POST", body: JSON.stringify(input) }, "/users"),
+  create: (input: {
+    username: string;
+    password: string;
+    role: Role;
+    organizationId?: string;
+    flowIds?: number[];
+  }) => request<PortalUser>("", { method: "POST", body: JSON.stringify(input) }, "/users"),
   disable: (id: number) => request<void>(`/${id}`, { method: "DELETE" }, "/users"),
+  setFlowGrants: (id: number, flowIds: number[]) =>
+    request<PortalUser>(`/${id}/flows`, { method: "PUT", body: JSON.stringify({ flowIds }) }, "/users"),
 };
 
 export const flowApi = {
   list: () => request<FlowDefinition[]>("", undefined, "/flows"),
+  // OPERATIONAL's whole flow list — flows explicitly granted to them, unlike list()/listByProfile() which they can't call.
+  granted: () => request<FlowDefinition[]>("/granted", undefined, "/flows"),
   listPublic: () => request<FlowDefinition[]>("/public", undefined, "/flows"),
   listByProfile: (profileId: string) =>
     request<FlowDefinition[]>(`/profile/${encodeURIComponent(profileId)}`, undefined, "/flows"),
