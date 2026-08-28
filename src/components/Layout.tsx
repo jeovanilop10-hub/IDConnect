@@ -65,7 +65,7 @@ export default function Layout() {
           </span>
           <div>
             <span className="font-display font-bold tracking-tight text-lg text-ink block leading-tight">
-              Fargo Connect
+              ID Issuance
             </span>
             <span className="text-muted text-xs">Panel de emisión</span>
           </div>
@@ -136,7 +136,7 @@ export default function Layout() {
           <span className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center shrink-0">
             <CreditCard size={16} strokeWidth={2} className="text-white" />
           </span>
-          <span className="font-display font-bold tracking-tight text-ink">Fargo Connect</span>
+          <span className="font-display font-bold tracking-tight text-ink">ID Issuance</span>
         </div>
         <button
           onClick={() => setMobileOpen(true)}

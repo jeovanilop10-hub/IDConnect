@@ -118,7 +118,7 @@ export default function Users() {
               <input
                 value={organizationId}
                 onChange={(e) => setOrganizationId(e.target.value)}
-                placeholder="debe existir en Fargo Connect"
+                placeholder="debe existir en ID Issuance"
                 className="input w-full"
               />
             </label>

@@ -48,7 +48,7 @@ export default function Login() {
           <span className="w-9 h-9 rounded-lg bg-brand flex items-center justify-center">
             <CreditCard size={18} strokeWidth={2} className="text-white" />
           </span>
-          <span className="font-display font-bold tracking-tight text-xl text-ink">Fargo Connect</span>
+          <span className="font-display font-bold tracking-tight text-xl text-ink">ID Issuance</span>
         </div>
 
         <form onSubmit={handleSubmit} className="stub p-6 space-y-4">

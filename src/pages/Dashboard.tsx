@@ -7,7 +7,7 @@ const CARDS: { to: string; label: string; desc: string; roles: Role[] }[] = [
   {
     to: "/organizaciones",
     label: "Organizaciones",
-    desc: "Unidades organizacionales y ubicaciones registradas en Fargo Connect.",
+    desc: "Unidades organizacionales y ubicaciones registradas en ID Issuance.",
     roles: ["ADMIN", "OPERATOR"],
   },
   {
@@ -37,7 +37,7 @@ export default function Dashboard() {
   return (
     <div>
       <PageHeader
-        eyebrow="Fargo Connect · HID Card Services"
+        eyebrow="ID Issuance · HID Card Services"
         title="Panel de emisión de tarjetas"
         description="Flujo completo: selecciona una organización, configura un perfil de producción, envía el trabajo a la impresora y monitorea su estado."
       />
