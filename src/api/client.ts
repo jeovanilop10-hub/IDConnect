@@ -18,6 +18,7 @@ import type {
   FlowDefinition,
   PublicFlow,
   PreloadedDataInfo,
+  PendingJobItem,
 } from "./types";
 
 // In production the frontend and backend are separate Render services, so API
@@ -164,6 +165,14 @@ export const flowApi = {
   },
   getPreloadedDataInfo: (id: number) => request<PreloadedDataInfo>(`/${id}/preloaded-data`, undefined, "/flows"),
   clearPreloadedData: (id: number) => request<void>(`/${id}/preloaded-data`, { method: "DELETE" }, "/flows"),
+  uploadPending: (id: number, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request<PendingJobItem[]>(`/${id}/pending`, { method: "POST", body: form }, "/flows");
+  },
+  listPending: (id: number) => request<PendingJobItem[]>(`/${id}/pending`, undefined, "/flows"),
+  deletePending: (id: number, itemId: number) =>
+    request<void>(`/${id}/pending/${itemId}`, { method: "DELETE" }, "/flows"),
 };
 
 // Unauthenticated kiosk endpoints — reused `request()` works fine here since

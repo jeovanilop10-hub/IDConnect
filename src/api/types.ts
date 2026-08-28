@@ -263,6 +263,13 @@ export interface PreloadedDataInfo {
   columns: string[];
 }
 
+// One row of an uploaded "pending jobs" CSV for a flow — worked through one
+// at a time and removed once a job is submitted from it.
+export interface PendingJobItem {
+  id: number;
+  values: Record<string, string>;
+}
+
 // What the unauthenticated /captura/{slug} screen is allowed to see.
 export interface PublicFlow {
   name: string;

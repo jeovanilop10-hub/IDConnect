@@ -11,6 +11,7 @@ import { useAuth } from "../auth/AuthContext";
 import type {
   CardRequestServiceData,
   FlowDefinition,
+  PendingJobItem,
   ProductionProfileParameter,
   ProductionRequestTemplate,
 } from "../api/types";
@@ -48,6 +49,60 @@ export default function NewJob() {
       .catch(() => setGrantedFlows([]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Once a flow is picked, an OPERATIONAL user can work through a CSV-loaded
+  // queue of pending jobs instead of retyping each one — click a row to
+  // pre-fill the guided form with it, submit, and it's removed from the queue.
+  const [pendingItems, setPendingItems] = useState<PendingJobItem[] | undefined>(undefined);
+  const [activePending, setActivePending] = useState<PendingJobItem | null>(null);
+  const [manualEntry, setManualEntry] = useState(false);
+  const [uploadingPending, setUploadingPending] = useState(false);
+  const [pendingError, setPendingError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedGrantedFlow?.id) return;
+    setActivePending(null);
+    setManualEntry(false);
+    flowApi
+      .listPending(selectedGrantedFlow.id)
+      .then(setPendingItems)
+      .catch(() => setPendingItems([]));
+  }, [selectedGrantedFlow?.id]);
+
+  async function handleUploadPendingFile(file: File) {
+    if (!selectedGrantedFlow?.id) return;
+    setPendingError(null);
+    setUploadingPending(true);
+    try {
+      setPendingItems(await flowApi.uploadPending(selectedGrantedFlow.id, file));
+    } catch (err: any) {
+      setPendingError(err?.message ?? "No se pudo cargar el archivo.");
+    } finally {
+      setUploadingPending(false);
+    }
+  }
+
+  function pendingTemplateColumns(): string[] {
+    if (!selectedGrantedFlow) return [];
+    return Array.from(
+      new Set(selectedGrantedFlow.steps.filter((s) => s.type === "FIELDS").flatMap((s) => s.parameterNames ?? [])),
+    );
+  }
+
+  function downloadPendingTemplate() {
+    const headers = pendingTemplateColumns();
+    const escapeCsv = (value: string) => (/[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value);
+    const csv = headers.map(escapeCsv).join(",") + "\r\n";
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `plantilla-pendientes-${(selectedGrantedFlow?.name || "flujo").replace(/\s+/g, "-")}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
 
   const [step, setStep] = useState<Step>(isClient ? 2 : 1);
   const [organizationId, setOrganizationId] = useState(isClient ? user?.organizationId ?? "" : "");
@@ -252,6 +307,90 @@ export default function NewJob() {
       );
     }
 
+    if (!activePending && !manualEntry) {
+      return (
+        <div>
+          <PageHeader eyebrow="Solicitud guiada" title={selectedGrantedFlow.name} />
+          <div className="stub p-6 space-y-5">
+            <div>
+              <p className="text-brand text-xs font-semibold uppercase tracking-wide mb-2">
+                Trabajos pendientes (CSV)
+              </p>
+              <p className="text-muted text-xs mb-3">
+                Carga un CSV con varios registros para este flujo — cada fila queda en esta lista, y al enviar el
+                trabajo de una fila, desaparece de aquí.
+              </p>
+              <div className="flex flex-wrap items-center gap-3 mb-3">
+                <input
+                  type="file"
+                  accept=".csv,text/csv"
+                  disabled={uploadingPending}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleUploadPendingFile(file);
+                    e.target.value = "";
+                  }}
+                  className="text-xs"
+                />
+                <button
+                  type="button"
+                  onClick={downloadPendingTemplate}
+                  className="text-xs text-brand hover:underline"
+                >
+                  Descargar plantilla CSV
+                </button>
+              </div>
+              <p className="text-muted text-xs mb-3">
+                Columnas: <code className="font-mono">{pendingTemplateColumns().join(", ") || "(este flujo no tiene pasos de tipo Campos)"}</code>
+              </p>
+              {uploadingPending && <p className="text-muted text-xs mb-3">Procesando…</p>}
+              {pendingError && (
+                <div className="mb-3">
+                  <ErrorBanner message={pendingError} />
+                </div>
+              )}
+
+              {pendingItems === undefined ? (
+                <Loading label="Cargando pendientes" />
+              ) : pendingItems.length === 0 ? (
+                <p className="text-muted text-sm">No hay trabajos pendientes cargados para este flujo.</p>
+              ) : (
+                <div className="space-y-2">
+                  {pendingItems.map((item) => {
+                    const summary = Object.values(item.values).filter(Boolean).join(" · ") || "(sin datos)";
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActivePending(item)}
+                        className="w-full text-left px-4 py-3 rounded-lg border border-border hover:border-brand/40 hover:bg-brand/5 transition-colors"
+                      >
+                        <p className="text-ink text-sm truncate">{summary}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-between items-center pt-2 border-t border-border">
+              <button
+                onClick={() => (grantedFlows.length > 1 ? setSelectedGrantedFlow(null) : navigate("/"))}
+                className="border border-border px-4 py-2 rounded text-sm text-muted hover:text-ink transition-colors"
+              >
+                ← Atrás
+              </button>
+              <button
+                onClick={() => setManualEntry(true)}
+                className="text-sm text-brand hover:underline"
+              >
+                Registrar manualmente (sin datos precargados) →
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div>
         <PageHeader eyebrow="Solicitud guiada" title={selectedGrantedFlow.name} />
@@ -260,8 +399,18 @@ export default function NewJob() {
             steps={selectedGrantedFlow.steps}
             requestNameField={selectedGrantedFlow.requestNameField}
             fetchTemplate={() => flowApi.getTemplate(selectedGrantedFlow.id!)}
-            submitJob={(template) => jobApi.submit(template, selectedGrantedFlow.id)}
-            onBack={() => (grantedFlows.length > 1 ? setSelectedGrantedFlow(null) : navigate("/"))}
+            initialValues={activePending?.values}
+            submitJob={async (template) => {
+              const jobId = await jobApi.submit(template, selectedGrantedFlow.id);
+              if (activePending) {
+                await flowApi.deletePending(selectedGrantedFlow.id!, activePending.id).catch(() => {});
+              }
+              return jobId;
+            }}
+            onBack={() => {
+              setActivePending(null);
+              setManualEntry(false);
+            }}
             onSubmitted={(jobId) => setSubmittedJobId(jobId)}
           />
         </div>
