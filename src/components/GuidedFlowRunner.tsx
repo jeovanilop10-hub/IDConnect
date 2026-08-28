@@ -20,10 +20,17 @@ export default function GuidedFlowRunner({
   onBack: () => void;
   onSubmitted: (jobId: string) => void;
   // Parameter name -> value pairs to pre-fill once the template loads (e.g.
-  // from the kiosk's identifier lookup) — the person still sees and can
-  // edit them like any other captured value, this only skips retyping.
+  // from the kiosk's identifier lookup, or an OPERATIONAL user's pending-jobs
+  // CSV row). Locked, not just pre-filled: this is data someone already
+  // loaded as authoritative, so the FIELDS step for it renders read-only
+  // instead of letting it be retyped.
   initialValues?: Record<string, string>;
 }) {
+  const lockedFieldNames = new Set(
+    Object.entries(initialValues ?? {})
+      .filter(([, value]) => value !== undefined && value !== "")
+      .map(([name]) => name),
+  );
   const [template, setTemplate] = useState<ProductionRequestTemplate | null>(null);
   const [configuring, setConfiguring] = useState(true);
   const [configError, setConfigError] = useState<string | null>(null);
@@ -219,7 +226,14 @@ export default function GuidedFlowRunner({
                 {(step.parameterNames ?? []).map((name) => {
                   const p = findParam(name);
                   if (!p) return null;
-                  return <RequestParameterField key={name} param={p} onChange={(v) => setParamValue(name, v)} />;
+                  return (
+                    <RequestParameterField
+                      key={name}
+                      param={p}
+                      onChange={(v) => setParamValue(name, v)}
+                      readOnly={lockedFieldNames.has(name)}
+                    />
+                  );
                 })}
               </div>
             )}

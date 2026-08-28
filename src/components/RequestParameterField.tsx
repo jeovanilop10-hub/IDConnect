@@ -12,19 +12,25 @@ function sanitize(raw: unknown): string {
 export default function RequestParameterField({
   param,
   onChange,
+  readOnly,
 }: {
   param: RequestParameter;
   onChange: (value: string | null) => void;
+  // Locks the field instead of just pre-filling it — for data that was
+  // already loaded from a CSV/lookup and shouldn't be retyped here.
+  readOnly?: boolean;
 }) {
   const data = param.parameter ?? {};
   const dataType = param.dataType ?? data.dataType ?? "Text";
   const value = sanitize(data.value);
+  const inputClassName = `input w-full${readOnly ? " bg-surface-alt text-muted cursor-not-allowed" : ""}`;
 
   const label = (
     <span className="block mb-1 text-sm">
       {data.name ?? "parámetro"}
       {data.required && <span className="text-brand ml-1">*</span>}
       <span className="text-muted text-xs font-mono ml-2">{dataType}</span>
+      {readOnly && <span className="text-muted text-xs ml-2">(precargado, no editable)</span>}
     </span>
   );
 
@@ -59,7 +65,12 @@ export default function RequestParameterField({
     return (
       <label className="block">
         {label}
-        <select value={value} onChange={(e) => onChange(e.target.value)} className="input w-full">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={readOnly}
+          className={inputClassName}
+        >
           <option value="">Elige una opción</option>
           {data.options.map((opt) => (
             <option key={opt} value={opt}>
@@ -81,8 +92,9 @@ export default function RequestParameterField({
         <input
           type="date"
           value={dateOnly}
-          onChange={(e) => onChange(e.target.value ? `${e.target.value}T00:00:00` : null)}
-          className="input w-full"
+          onChange={readOnly ? undefined : (e) => onChange(e.target.value ? `${e.target.value}T00:00:00` : null)}
+          readOnly={readOnly}
+          className={inputClassName}
         />
       </label>
     );
@@ -95,9 +107,10 @@ export default function RequestParameterField({
         <input
           type="number"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={readOnly ? undefined : (e) => onChange(e.target.value)}
           placeholder="Escribe un número"
-          className="input w-full"
+          readOnly={readOnly}
+          className={inputClassName}
         />
       </label>
     );
@@ -111,7 +124,8 @@ export default function RequestParameterField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={`Escribe tu ${(data.name ?? "dato").toLowerCase()}`}
-        className="input w-full"
+        readOnly={readOnly}
+        className={inputClassName}
       />
     </label>
   );
