@@ -280,6 +280,22 @@ export interface PublicPreloadedData {
   pendingItemId?: number | null;
 }
 
+// Returned by uploading a pending-jobs CSV — a count, not the (possibly
+// thousand-plus row) list itself; fetch the actual rows via listPending.
+export interface PendingUploadSummary {
+  added: number;
+  total: number;
+}
+
+// Spring's default JSON shape for a Page<T> — only the fields actually used here.
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
 // What the unauthenticated /captura/{slug} screen is allowed to see.
 export interface PublicFlow {
   name: string;

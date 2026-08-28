@@ -11,6 +11,7 @@ import { useAuth } from "../auth/AuthContext";
 import type {
   CardRequestServiceData,
   FlowDefinition,
+  Page,
   PendingJobItem,
   ProductionProfileParameter,
   ProductionRequestTemplate,
@@ -53,20 +54,39 @@ export default function NewJob() {
   // Once a flow is picked, an OPERATIONAL user can work through a CSV-loaded
   // queue of pending jobs instead of retyping each one — click a row to
   // pre-fill the guided form with it, submit, and it's removed from the queue.
-  const [pendingItems, setPendingItems] = useState<PendingJobItem[] | undefined>(undefined);
+  // Paginated (not one flat list) since an upload can run into the thousands.
+  const PENDING_PAGE_SIZE = 25;
+  const [pendingPage, setPendingPage] = useState<Page<PendingJobItem> | undefined>(undefined);
+  const [pendingSearchInput, setPendingSearchInput] = useState("");
   const [activePending, setActivePending] = useState<PendingJobItem | null>(null);
   const [manualEntry, setManualEntry] = useState(false);
   const [uploadingPending, setUploadingPending] = useState(false);
+  const [clearingPending, setClearingPending] = useState(false);
   const [pendingError, setPendingError] = useState<string | null>(null);
+  const [editingPendingId, setEditingPendingId] = useState<number | null>(null);
+  const [editPersonId, setEditPersonId] = useState("");
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [savingPendingEdit, setSavingPendingEdit] = useState(false);
+  const [deletingPendingId, setDeletingPendingId] = useState<number | null>(null);
+
+  function loadPendingPage(pageIndex: number, search: string) {
+    if (!selectedGrantedFlow?.id) return;
+    flowApi
+      .listPending(selectedGrantedFlow.id, pageIndex, PENDING_PAGE_SIZE, search || undefined)
+      .then(setPendingPage)
+      .catch(() =>
+        setPendingPage({ content: [], totalElements: 0, totalPages: 0, number: 0, size: PENDING_PAGE_SIZE }),
+      );
+  }
 
   useEffect(() => {
     if (!selectedGrantedFlow?.id) return;
     setActivePending(null);
     setManualEntry(false);
-    flowApi
-      .listPending(selectedGrantedFlow.id)
-      .then(setPendingItems)
-      .catch(() => setPendingItems([]));
+    setEditingPendingId(null);
+    setPendingSearchInput("");
+    loadPendingPage(0, "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedGrantedFlow?.id]);
 
   async function handleUploadPendingFile(file: File) {
@@ -74,11 +94,65 @@ export default function NewJob() {
     setPendingError(null);
     setUploadingPending(true);
     try {
-      setPendingItems(await flowApi.uploadPending(selectedGrantedFlow.id, file));
+      await flowApi.uploadPending(selectedGrantedFlow.id, file);
+      loadPendingPage(0, pendingSearchInput);
     } catch (err: any) {
       setPendingError(err?.message ?? "No se pudo cargar el archivo.");
     } finally {
       setUploadingPending(false);
+    }
+  }
+
+  async function handleClearAllPending() {
+    if (!selectedGrantedFlow?.id) return;
+    setPendingError(null);
+    setClearingPending(true);
+    try {
+      await flowApi.clearPending(selectedGrantedFlow.id);
+      loadPendingPage(0, pendingSearchInput);
+    } catch (err: any) {
+      setPendingError(err?.message ?? "No se pudieron borrar los pendientes.");
+    } finally {
+      setClearingPending(false);
+    }
+  }
+
+  function startEditingPending(item: PendingJobItem) {
+    setEditingPendingId(item.id);
+    setEditPersonId(item.personId ?? "");
+    setEditValues(item.values);
+    setPendingError(null);
+  }
+
+  async function handleSavePendingEdit() {
+    if (!selectedGrantedFlow?.id || editingPendingId == null) return;
+    setPendingError(null);
+    setSavingPendingEdit(true);
+    try {
+      await flowApi.updatePending(selectedGrantedFlow.id, editingPendingId, {
+        personId: editPersonId.trim() || null,
+        values: editValues,
+      });
+      setEditingPendingId(null);
+      loadPendingPage(pendingPage?.number ?? 0, pendingSearchInput);
+    } catch (err: any) {
+      setPendingError(err?.message ?? "No se pudo guardar el registro.");
+    } finally {
+      setSavingPendingEdit(false);
+    }
+  }
+
+  async function handleDeletePendingItem(itemId: number) {
+    if (!selectedGrantedFlow?.id) return;
+    setPendingError(null);
+    setDeletingPendingId(itemId);
+    try {
+      await flowApi.deletePending(selectedGrantedFlow.id, itemId);
+      loadPendingPage(pendingPage?.number ?? 0, pendingSearchInput);
+    } catch (err: any) {
+      setPendingError(err?.message ?? "No se pudo eliminar el registro.");
+    } finally {
+      setDeletingPendingId(null);
     }
   }
 
@@ -343,6 +417,16 @@ export default function NewJob() {
                 >
                   Descargar plantilla CSV
                 </button>
+                {(pendingPage?.totalElements ?? 0) > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleClearAllPending}
+                    disabled={clearingPending}
+                    className="text-xs text-muted hover:text-danger transition-colors disabled:opacity-50"
+                  >
+                    {clearingPending ? "Borrando…" : "Borrar todos los pendientes"}
+                  </button>
+                )}
               </div>
               <p className="text-muted text-xs mb-3">
                 Columnas: <code className="font-mono">{pendingTemplateColumns().join(", ")}</code> — la primera es el
@@ -356,25 +440,124 @@ export default function NewJob() {
                 </div>
               )}
 
-              {pendingItems === undefined ? (
+              {(pendingPage?.totalElements ?? 0) > 0 && (
+                <div className="flex items-center gap-2 mb-3">
+                  <input
+                    value={pendingSearchInput}
+                    onChange={(e) => setPendingSearchInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && loadPendingPage(0, pendingSearchInput)}
+                    placeholder="Buscar por identificador…"
+                    className="input flex-1 text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => loadPendingPage(0, pendingSearchInput)}
+                    className="text-xs border border-border px-3 py-2 rounded hover:border-brand/50 transition-colors"
+                  >
+                    Buscar
+                  </button>
+                </div>
+              )}
+
+              {pendingPage === undefined ? (
                 <Loading label="Cargando pendientes" />
-              ) : pendingItems.length === 0 ? (
-                <p className="text-muted text-sm">No hay trabajos pendientes cargados para este flujo.</p>
+              ) : pendingPage.content.length === 0 ? (
+                <p className="text-muted text-sm">
+                  {pendingSearchInput
+                    ? "Ningún registro coincide con esa búsqueda."
+                    : "No hay trabajos pendientes cargados para este flujo."}
+                </p>
               ) : (
                 <div className="space-y-2">
-                  {pendingItems.map((item) => {
+                  {pendingPage.content.map((item) => {
                     const summary = Object.values(item.values).filter(Boolean).join(" · ") || "(sin datos)";
+                    if (editingPendingId === item.id) {
+                      return (
+                        <div key={item.id} className="border border-brand/40 rounded-lg p-3 space-y-2 bg-brand/5">
+                          <label className="block">
+                            <span className="block text-xs text-muted mb-1">Identificador</span>
+                            <input
+                              value={editPersonId}
+                              onChange={(e) => setEditPersonId(e.target.value)}
+                              className="input w-full text-sm"
+                            />
+                          </label>
+                          {Object.keys(editValues).map((key) => (
+                            <label key={key} className="block">
+                              <span className="block text-xs text-muted mb-1">{key}</span>
+                              <input
+                                value={editValues[key]}
+                                onChange={(e) => setEditValues((prev) => ({ ...prev, [key]: e.target.value }))}
+                                className="input w-full text-sm"
+                              />
+                            </label>
+                          ))}
+                          <div className="flex items-center gap-3 pt-1">
+                            <button
+                              onClick={handleSavePendingEdit}
+                              disabled={savingPendingEdit}
+                              className="bg-brand text-white font-medium px-4 py-1.5 rounded text-xs hover:bg-brand-dim transition-colors disabled:opacity-50"
+                            >
+                              {savingPendingEdit ? "Guardando…" : "Guardar"}
+                            </button>
+                            <button
+                              onClick={() => setEditingPendingId(null)}
+                              className="text-xs text-muted hover:text-ink transition-colors"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    }
                     return (
-                      <button
+                      <div
                         key={item.id}
-                        onClick={() => setActivePending(item)}
-                        className="w-full text-left px-4 py-3 rounded-lg border border-border hover:border-brand/40 hover:bg-brand/5 transition-colors"
+                        className="flex items-center gap-2 px-4 py-3 rounded-lg border border-border hover:border-brand/40 hover:bg-brand/5 transition-colors"
                       >
-                        {item.personId && <p className="text-muted text-xs font-mono">{item.personId}</p>}
-                        <p className="text-ink text-sm truncate">{summary}</p>
-                      </button>
+                        <button onClick={() => setActivePending(item)} className="flex-1 min-w-0 text-left">
+                          {item.personId && <p className="text-muted text-xs font-mono">{item.personId}</p>}
+                          <p className="text-ink text-sm truncate">{summary}</p>
+                        </button>
+                        <button
+                          onClick={() => startEditingPending(item)}
+                          className="text-xs text-muted hover:text-brand transition-colors shrink-0"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDeletePendingItem(item.id)}
+                          disabled={deletingPendingId === item.id}
+                          className="text-xs text-muted hover:text-danger transition-colors shrink-0 disabled:opacity-50"
+                        >
+                          {deletingPendingId === item.id ? "…" : "Eliminar"}
+                        </button>
+                      </div>
                     );
                   })}
+                </div>
+              )}
+
+              {pendingPage && pendingPage.totalPages > 1 && (
+                <div className="flex items-center justify-between mt-3 text-xs text-muted">
+                  <button
+                    onClick={() => loadPendingPage(pendingPage.number - 1, pendingSearchInput)}
+                    disabled={pendingPage.number === 0}
+                    className="border border-border px-3 py-1.5 rounded hover:border-brand/50 transition-colors disabled:opacity-50"
+                  >
+                    ← Anterior
+                  </button>
+                  <span>
+                    Página {pendingPage.number + 1} de {pendingPage.totalPages} ({pendingPage.totalElements} en
+                    total)
+                  </span>
+                  <button
+                    onClick={() => loadPendingPage(pendingPage.number + 1, pendingSearchInput)}
+                    disabled={pendingPage.number + 1 >= pendingPage.totalPages}
+                    className="border border-border px-3 py-1.5 rounded hover:border-brand/50 transition-colors disabled:opacity-50"
+                  >
+                    Siguiente →
+                  </button>
                 </div>
               )}
             </div>

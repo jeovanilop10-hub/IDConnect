@@ -20,6 +20,8 @@ import type {
   PreloadedDataInfo,
   PendingJobItem,
   PublicPreloadedData,
+  PendingUploadSummary,
+  Page,
 } from "./types";
 
 // In production the frontend and backend are separate Render services, so API
@@ -169,11 +171,18 @@ export const flowApi = {
   uploadPending: (id: number, file: File) => {
     const form = new FormData();
     form.append("file", file);
-    return request<PendingJobItem[]>(`/${id}/pending`, { method: "POST", body: form }, "/flows");
+    return request<PendingUploadSummary>(`/${id}/pending`, { method: "POST", body: form }, "/flows");
   },
-  listPending: (id: number) => request<PendingJobItem[]>(`/${id}/pending`, undefined, "/flows"),
+  listPending: (id: number, page: number, size: number, personIdFilter?: string) => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (personIdFilter) params.set("personId", personIdFilter);
+    return request<Page<PendingJobItem>>(`/${id}/pending?${params}`, undefined, "/flows");
+  },
+  updatePending: (id: number, itemId: number, input: { personId?: string | null; values: Record<string, string> }) =>
+    request<PendingJobItem>(`/${id}/pending/${itemId}`, { method: "PUT", body: JSON.stringify(input) }, "/flows"),
   deletePending: (id: number, itemId: number) =>
     request<void>(`/${id}/pending/${itemId}`, { method: "DELETE" }, "/flows"),
+  clearPending: (id: number) => request<void>(`/${id}/pending`, { method: "DELETE" }, "/flows"),
 };
 
 // Unauthenticated kiosk endpoints — reused `request()` works fine here since
