@@ -7,6 +7,7 @@ import ProductionProfiles from "./pages/ProductionProfiles";
 import Jobs from "./pages/Jobs";
 import JobDetail from "./pages/JobDetail";
 import NewJob from "./pages/NewJob";
+import PendingJobs from "./pages/PendingJobs";
 import Login from "./pages/Login";
 import Users from "./pages/Users";
 import FlowBuilder from "./pages/FlowBuilder";
@@ -88,6 +89,14 @@ export default function App() {
           }
         />
         <Route path="/nuevo-trabajo" element={<NewJob />} />
+        <Route
+          path="/pendientes"
+          element={
+            <ProtectedRoute allow={["OPERATIONAL"]}>
+              <PendingJobs />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/usuarios"
           element={

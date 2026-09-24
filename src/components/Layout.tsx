@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   Building2,
+  ClipboardList,
   CreditCard,
   FileText,
   LayoutGrid,
@@ -33,6 +34,7 @@ const NAV: NavItem[] = [
   { to: "/dispositivos", label: "Dispositivos", icon: Printer, roles: ["ADMIN", "OPERATOR"] },
   { to: "/perfiles", label: "Perfiles de producción", icon: FileText, roles: ["ADMIN", "OPERATOR", "CLIENT"] },
   { to: "/trabajos", label: "Trabajos", icon: CreditCard, roles: ["ADMIN", "OPERATOR", "CLIENT", "OPERATIONAL"] },
+  { to: "/pendientes", label: "Trabajos pendientes", icon: ClipboardList, roles: ["OPERATIONAL"] },
   { to: "/flujos", label: "Constructor de flujos", icon: Workflow, roles: ["ADMIN", "OPERATOR"] },
   { to: "/captura", label: "Captura pública", icon: Monitor, roles: ["ADMIN", "OPERATOR"] },
   { to: "/usuarios", label: "Usuarios", icon: UsersIcon, roles: ["ADMIN"] },

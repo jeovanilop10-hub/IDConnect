@@ -28,6 +28,12 @@ const CARDS: { to: string; label: string; desc: string; roles: Role[] }[] = [
     desc: "Historial de trabajos de impresión por periodo o rango de fechas.",
     roles: ["ADMIN", "OPERATOR", "CLIENT", "OPERATIONAL"],
   },
+  {
+    to: "/pendientes",
+    label: "Trabajos pendientes",
+    desc: "Registros cargados por CSV, listos para procesarse o para autoservicio en el kiosco.",
+    roles: ["OPERATIONAL"],
+  },
 ];
 
 export default function Dashboard() {
