@@ -287,6 +287,14 @@ export interface PendingUploadSummary {
   total: number;
 }
 
+// Counts for the "registros cargados / atendidos" dashboard on a flow's
+// pending queue. total includes rows already submitted to print.
+export interface PendingSummary {
+  total: number;
+  processed: number;
+  pending: number;
+}
+
 // Spring's default JSON shape for a Page<T> — only the fields actually used here.
 export interface Page<T> {
   content: T[];

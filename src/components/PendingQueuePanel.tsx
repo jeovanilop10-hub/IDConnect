@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ErrorBanner, Loading } from "./Feedback";
 import { flowApi } from "../api/client";
-import type { FlowDefinition, Page, PendingJobItem } from "../api/types";
+import type { FlowDefinition, Page, PendingJobItem, PendingSummary } from "../api/types";
 
 const PENDING_PAGE_SIZE = 25;
 
@@ -25,6 +25,7 @@ export default function PendingQueuePanel({
   backLabel?: string;
 }) {
   const [pendingPage, setPendingPage] = useState<Page<PendingJobItem> | undefined>(undefined);
+  const [summary, setSummary] = useState<PendingSummary | undefined>(undefined);
   const [pendingSearchInput, setPendingSearchInput] = useState("");
   const [uploadingPending, setUploadingPending] = useState(false);
   const [clearingPending, setClearingPending] = useState(false);
@@ -45,11 +46,17 @@ export default function PendingQueuePanel({
       );
   }
 
+  function loadSummary() {
+    if (!flow.id) return;
+    flowApi.pendingSummary(flow.id).then(setSummary).catch(() => setSummary(undefined));
+  }
+
   useEffect(() => {
     setEditingPendingId(null);
     setPendingSearchInput("");
     setPendingError(null);
     loadPendingPage(0, "");
+    loadSummary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flow.id]);
 
@@ -60,6 +67,7 @@ export default function PendingQueuePanel({
     try {
       await flowApi.uploadPending(flow.id, file);
       loadPendingPage(0, pendingSearchInput);
+      loadSummary();
     } catch (err: any) {
       setPendingError(err?.message ?? "No se pudo cargar el archivo.");
     } finally {
@@ -74,6 +82,7 @@ export default function PendingQueuePanel({
     try {
       await flowApi.clearPending(flow.id);
       loadPendingPage(0, pendingSearchInput);
+      loadSummary();
     } catch (err: any) {
       setPendingError(err?.message ?? "No se pudieron borrar los pendientes.");
     } finally {
@@ -113,6 +122,7 @@ export default function PendingQueuePanel({
     try {
       await flowApi.deletePending(flow.id, itemId);
       loadPendingPage(pendingPage?.number ?? 0, pendingSearchInput);
+      loadSummary();
     } catch (err: any) {
       setPendingError(err?.message ?? "No se pudo eliminar el registro.");
     } finally {
@@ -153,6 +163,31 @@ export default function PendingQueuePanel({
           Carga un CSV con varios registros para este flujo — cada fila queda en esta lista, y al enviar el trabajo
           de una fila, desaparece de aquí.
         </p>
+
+        {summary && summary.total > 0 && (
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="border border-border rounded-lg px-3 py-2.5">
+              <p className="text-muted text-[11px] uppercase tracking-wide mb-0.5">Cargados</p>
+              <p className="text-ink text-lg font-display font-semibold">{summary.total}</p>
+            </div>
+            <div className="border border-success/30 bg-success/5 rounded-lg px-3 py-2.5">
+              <p className="text-success text-[11px] uppercase tracking-wide mb-0.5">Atendidos</p>
+              <p className="text-success text-lg font-display font-semibold">{summary.processed}</p>
+            </div>
+            <div className="border border-brand/30 bg-brand/5 rounded-lg px-3 py-2.5">
+              <p className="text-brand text-[11px] uppercase tracking-wide mb-0.5">Pendientes</p>
+              <p className="text-brand text-lg font-display font-semibold">{summary.pending}</p>
+            </div>
+          </div>
+        )}
+        {summary && summary.total > 0 && (
+          <div className="w-full h-1.5 rounded-full bg-surface-alt overflow-hidden mb-4">
+            <div
+              className="h-full bg-success transition-all"
+              style={{ width: `${Math.round((summary.processed / summary.total) * 100)}%` }}
+            />
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-3 mb-3">
           <input
             type="file"

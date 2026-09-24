@@ -21,6 +21,7 @@ import type {
   PendingJobItem,
   PublicPreloadedData,
   PendingUploadSummary,
+  PendingSummary,
   Page,
 } from "./types";
 
@@ -183,6 +184,10 @@ export const flowApi = {
   deletePending: (id: number, itemId: number) =>
     request<void>(`/${id}/pending/${itemId}`, { method: "DELETE" }, "/flows"),
   clearPending: (id: number) => request<void>(`/${id}/pending`, { method: "DELETE" }, "/flows"),
+  // Marks a pending item as submitted-to-print (kept, not deleted) so it still counts toward pendingSummary's "processed".
+  markPendingProcessed: (id: number, itemId: number) =>
+    request<void>(`/${id}/pending/${itemId}/processed`, { method: "POST" }, "/flows"),
+  pendingSummary: (id: number) => request<PendingSummary>(`/${id}/pending/summary`, undefined, "/flows"),
 };
 
 // Unauthenticated kiosk endpoints — reused `request()` works fine here since

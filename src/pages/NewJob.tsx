@@ -316,7 +316,7 @@ export default function NewJob() {
             submitJob={async (template) => {
               const jobId = await jobApi.submit(template, selectedGrantedFlow.id);
               if (activePending) {
-                await flowApi.deletePending(selectedGrantedFlow.id!, activePending.id).catch(() => {});
+                await flowApi.markPendingProcessed(selectedGrantedFlow.id!, activePending.id).catch(() => {});
               }
               return jobId;
             }}
