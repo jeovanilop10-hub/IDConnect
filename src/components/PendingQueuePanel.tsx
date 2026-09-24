@@ -158,10 +158,21 @@ export default function PendingQueuePanel({
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-brand text-xs font-semibold uppercase tracking-wide mb-2">Trabajos pendientes (CSV)</p>
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <p className="text-brand text-xs font-semibold uppercase tracking-wide pt-1.5">Trabajos pendientes (CSV)</p>
+          {onManualEntry && (
+            <button
+              onClick={onManualEntry}
+              className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm shrink-0"
+            >
+              + Registrar manualmente
+            </button>
+          )}
+        </div>
         <p className="text-muted text-xs mb-3">
           Carga un CSV con varios registros para este flujo — cada fila queda en esta lista, y al enviar el trabajo
-          de una fila, desaparece de aquí.
+          de una fila, desaparece de aquí. ¿No tienes datos precargados para esta persona? Usa "Registrar
+          manualmente" arriba.
         </p>
 
         {summary && summary.total > 0 && (
@@ -344,23 +355,14 @@ export default function PendingQueuePanel({
         )}
       </div>
 
-      {(onBack || onManualEntry) && (
-        <div className="flex justify-between items-center pt-2 border-t border-border">
-          {onBack ? (
-            <button
-              onClick={onBack}
-              className="border border-border px-4 py-2 rounded text-sm text-muted hover:text-ink transition-colors"
-            >
-              {backLabel}
-            </button>
-          ) : (
-            <span />
-          )}
-          {onManualEntry && (
-            <button onClick={onManualEntry} className="text-sm text-brand hover:underline">
-              Registrar manualmente (sin datos precargados) →
-            </button>
-          )}
+      {onBack && (
+        <div className="pt-2 border-t border-border">
+          <button
+            onClick={onBack}
+            className="border border-border px-4 py-2 rounded text-sm text-muted hover:text-ink transition-colors"
+          >
+            {backLabel}
+          </button>
         </div>
       )}
     </div>
