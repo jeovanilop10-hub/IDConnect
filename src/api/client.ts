@@ -11,6 +11,7 @@ import type {
   ProductionRequestTemplate,
   Job,
   JobImageResource,
+  ResendEligibility,
   AuthUser,
   LoginResponse,
   PortalUser,
@@ -77,7 +78,8 @@ async function request<T>(path: string, init?: RequestInit, base = BASE): Promis
     let message = res.statusText;
     try {
       const body = await res.json();
-      message = body?.message ?? message;
+      // ApiError bodies carry `message`; Spring's ResponseStatusException (ProblemDetail) carries `detail`.
+      message = body?.message ?? body?.detail ?? message;
     } catch {
       // response had no JSON body
     }
@@ -224,6 +226,9 @@ export const jobApi = {
   imageResource: (jobUniqueId: string, resourceKey: string) =>
     request<JobImageResource>(`/job/${jobUniqueId}/${resourceKey}`),
   createUniqueId: () => request<string>("/job/createUniqueId"),
+  resendEligibility: (jobUniqueId: string) => request<ResendEligibility>(`/job/${jobUniqueId}/resend`),
+  // Submits the stored request again as a new job; returns the new jobUniqueId.
+  resend: (jobUniqueId: string) => request<string>(`/job/${jobUniqueId}/resend`, { method: "POST" }),
   // flowId (when the job came from a FlowDefinition) gets recorded server-side
   // so OPERATIONAL users can later see jobs from flows they're granted.
   submit: (template: ProductionRequestTemplate, flowId?: number) =>

@@ -1,8 +1,9 @@
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { RotateCw } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { ErrorBanner, JsonPreview, Loading, StatusBadge } from "../components/Feedback";
 import { useAsync } from "../hooks/useAsync";
-import { jobApi } from "../api/client";
+import { ApiError, jobApi } from "../api/client";
 import { formatLocalDateTime } from "../lib/date";
 import { useState } from "react";
 
@@ -12,8 +13,70 @@ function imageMimeType(imageType?: string): string {
   return imageType.includes("/") ? imageType : `image/${imageType.toLowerCase()}`;
 }
 
+/**
+ * Resend: submits the job's stored request again as a new job, allowed while
+ * the original hasn't printed. HID can't cancel jobs, so a job still in the
+ * queue ("Submitted") may print as well — that case asks for confirmation.
+ */
+function ResendPanel({ jobId, jobStatus }: { jobId: string; jobStatus?: string }) {
+  const navigate = useNavigate();
+  const { data: eligibility, loading, error } = useAsync(() => jobApi.resendEligibility(jobId), [jobId, jobStatus]);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+
+  async function handleResend() {
+    if (!eligibility?.canResend) return;
+    const warning = eligibility.mayPrintTwice
+      ? "Este trabajo sigue en cola (Submitted) y HID no permite cancelarlo: si la impresora todavía lo procesa, " +
+        "se imprimirían dos tarjetas.\n\n¿Reenviarlo de todos modos?"
+      : "Se enviará de nuevo como un trabajo nuevo. ¿Continuar?";
+    if (!window.confirm(warning)) return;
+
+    setSending(true);
+    setSendError(null);
+    try {
+      const newJobId = await jobApi.resend(jobId);
+      navigate(`/trabajos/${encodeURIComponent(newJobId)}`, { state: { resentFrom: jobId } });
+    } catch (err) {
+      setSendError(err instanceof ApiError ? err.message : "No se pudo reenviar el trabajo.");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="stub p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="min-w-0">
+        <p className="data-label mb-1">Reenviar</p>
+        {loading && <p className="text-muted text-sm">Verificando si se puede reenviar…</p>}
+        {error && <p className="text-danger text-sm">No se pudo verificar el reenvío: {error}</p>}
+        {eligibility && (
+          <p className="text-sm text-muted">
+            {eligibility.canResend
+              ? eligibility.mayPrintTwice
+                ? "Disponible. El trabajo sigue en cola: confirma antes para evitar una doble impresión."
+                : "Disponible: el trabajo no se ha impreso y se enviará de nuevo como un trabajo nuevo."
+              : eligibility.reason}
+          </p>
+        )}
+        {sendError && <p className="text-danger text-sm mt-2">{sendError}</p>}
+      </div>
+      <button
+        onClick={handleResend}
+        disabled={!eligibility?.canResend || sending}
+        className="btn-primary gap-2 px-4 py-2 text-sm shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <RotateCw size={15} strokeWidth={2.25} />
+        {sending ? "Reenviando…" : "Reenviar trabajo"}
+      </button>
+    </div>
+  );
+}
+
 export default function JobDetail() {
   const { jobId = "" } = useParams();
+  const location = useLocation() as { state?: { resentFrom?: string } };
+  const resentFrom = location.state?.resentFrom;
   const { data: job, loading, error, reload } = useAsync(() => jobApi.get(jobId), [jobId]);
   const [resourceKey, setResourceKey] = useState("");
 
@@ -34,6 +97,12 @@ export default function JobDetail() {
         title={jobId}
         description="Detalle del trabajo de impresión y sus recursos de imagen asociados."
       />
+
+      {resentFrom && (
+        <div className="border border-success/40 bg-success/5 text-success rounded-lg px-4 py-3 text-sm mb-6">
+          Trabajo reenviado. Este es el nuevo trabajo; el original era <span className="font-mono">{resentFrom}</span>.
+        </div>
+      )}
 
       {loading && <Loading label="Cargando trabajo" />}
       {error && <ErrorBanner message={error} onRetry={reload} />}
@@ -58,6 +127,8 @@ export default function JobDetail() {
             <span className="text-muted text-xs">Estado:</span>
             <StatusBadge status={job.jobStatus} />
           </div>
+
+          <ResendPanel jobId={job.jobUniqueId ?? jobId} jobStatus={job.jobStatus} />
 
           <div>
             <p className="text-brand text-xs font-semibold uppercase tracking-wide mb-2">Datos completos</p>

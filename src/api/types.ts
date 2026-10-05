@@ -179,6 +179,15 @@ export interface Job extends WithExtras {
   jobResources?: JobResource[];
 }
 
+/** Whether a job can be resent (only while it hasn't printed and its request was stored). */
+export interface ResendEligibility {
+  canResend: boolean;
+  reason: string | null;
+  jobStatus?: string;
+  /** Still "Submitted": HID can't cancel it, so it may yet print and the resend would be a second card. */
+  mayPrintTwice: boolean;
+}
+
 export interface JobImageResource extends WithExtras {
   jobUniqueId?: string;
   resourceKey?: string;
