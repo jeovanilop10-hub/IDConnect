@@ -61,14 +61,12 @@ export default function Layout() {
   const sidebarContent = (
     <>
       <div className="px-5 py-6 border-b border-white/10 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <span className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center shrink-0">
-            <CreditCard size={18} strokeWidth={2} className="text-shell-deep" />
+        <div>
+          {/* Official ID Issuance lockup (3.75:1); only the width is set so the ratio holds. */}
+          <img src="/brand/idara-issuance-white.svg" alt="ID Issuance" className="block w-[176px] h-auto" />
+          <span className="font-mono uppercase text-[10px] tracking-[0.1em] text-accent block mt-2">
+            Panel de emisión
           </span>
-          <div>
-            <span className="font-display font-bold text-lg text-shell-text block leading-tight">ID Issuance</span>
-            <span className="font-mono uppercase text-[10px] tracking-[0.1em] text-accent">Panel de emisión</span>
-          </div>
         </div>
         <button
           onClick={() => setMobileOpen(false)}
@@ -134,12 +132,7 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Mobile top bar */}
       <div className="shell lg:hidden flex items-center justify-between px-4 py-3 sticky top-0 z-30">
-        <div className="flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shrink-0">
-            <CreditCard size={16} strokeWidth={2} className="text-shell-deep" />
-          </span>
-          <span className="font-display font-bold text-shell-text">ID Issuance</span>
-        </div>
+        <img src="/brand/idara-issuance-white.svg" alt="ID Issuance" className="block w-[140px] h-auto" />
         <button
           onClick={() => setMobileOpen(true)}
           className="text-shell-muted hover:text-shell-text transition-colors"

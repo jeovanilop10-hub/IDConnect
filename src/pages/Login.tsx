@@ -1,83 +1,176 @@
 import { FormEvent, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { CreditCard } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { ApiError } from "../api/client";
 
-// Scoped to this screen only, via the .login-idara wrapper below — the rest
-// of the app keeps its existing light corporate theme untouched. Colors and
-// type come from IDara's brand kit (forest green + a single cyan accent,
-// Poppins for display/eyebrow text).
+// Scoped to this screen via the .login-idara wrapper. Follows the official IDara
+// BrandBook 2025: Verde Core / Obsidiana / Síntegra / Bruma + Azul Quantum as the
+// only action color, IBM Plex Sans for titles and Roboto for body, and the official
+// ID Issuance product lockup endorsed by the IDara logo.
+// Layout uses two registers: a dark brand panel and the form on white "paper".
 const IDARA_STYLES = `
   .login-idara {
-    --bg-deep: #112921;
-    --bg-mid: #17362B;
-    --bg-nav: #2E4E43;
-    --text-white: #F6FFF5;
-    --text-mint: #C3EDE2;
-    --text-body: #DCF2EB;
-    --text-muted: #B3D7CD;
-    --accent-cyan: #90DAE6;
+    --core: #0a4032;
+    --sintegra: #b7eee2;
+    --obsidiana: #020f0a;
+    --bruma: #f4fff4;
+    --quantum: #77dce8;
+    --ink-soft: rgba(10, 64, 50, 0.72);
+    --hairline: rgba(10, 64, 50, 0.14);
     min-height: 100vh;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    background: radial-gradient(120% 140% at 15% 10%, var(--bg-mid) 0%, var(--bg-deep) 65%);
-    font-family: "Poppins", "Inter", sans-serif;
-    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    background: var(--bruma);
+    font-family: "Roboto", "Segoe UI", Arial, sans-serif;
+    color: var(--core);
   }
 
-  .login-idara .watermark {
+  .login-idara h1,
+  .login-idara h2,
+  .login-idara .eyebrow {
+    font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+  }
+
+  /* Brand panel: the dark register */
+  .login-idara .brand {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 3rem;
+    padding: 3rem clamp(2rem, 5vw, 4.5rem);
+    color: var(--bruma);
+    background:
+      radial-gradient(90% 70% at 0% 0%, rgba(183, 238, 226, 0.14) 0%, transparent 60%),
+      linear-gradient(160deg, var(--core) 0%, var(--obsidiana) 100%);
+  }
+
+  /* Diamond watermark (the IDara decorative motif), low opacity, top-right */
+  .login-idara .brand::after {
+    content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
     background-image:
-      repeating-linear-gradient(45deg, rgba(246, 255, 245, 0.055) 0, rgba(246, 255, 245, 0.055) 1px, transparent 1px, transparent 32px),
-      repeating-linear-gradient(-45deg, rgba(246, 255, 245, 0.055) 0, rgba(246, 255, 245, 0.055) 1px, transparent 1px, transparent 32px);
-    -webkit-mask-image: radial-gradient(circle 26rem at 100% 0%, black 0%, transparent 100%);
-    mask-image: radial-gradient(circle 26rem at 100% 0%, black 0%, transparent 100%);
+      repeating-linear-gradient(45deg, rgba(244, 255, 244, 0.06) 0 1px, transparent 1px 34px),
+      repeating-linear-gradient(-45deg, rgba(244, 255, 244, 0.06) 0 1px, transparent 1px 34px);
+    -webkit-mask-image: radial-gradient(circle 30rem at 100% 0%, black 0%, transparent 100%);
+    mask-image: radial-gradient(circle 30rem at 100% 0%, black 0%, transparent 100%);
   }
 
-  .login-idara .panel {
+  .login-idara .brand > * {
     position: relative;
-    width: 100%;
-    max-width: 25rem;
+    z-index: 1;
   }
 
-  .login-idara .wordmark {
+  /* Official lockup, aspect ratio 3.75:1 kept by fixing only the width */
+  .login-idara .product-logo {
+    display: block;
+    width: 220px;
+    height: auto;
+  }
+
+  .login-idara .tagline {
+    font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--quantum);
+    margin: 0 0 1.1rem;
+  }
+
+  .login-idara .brand h2 {
+    font-weight: 600;
+    font-size: clamp(1.9rem, 3.2vw, 2.6rem);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin: 0 0 1.25rem;
+    max-width: 30rem;
+  }
+
+  .login-idara .brand h2 em {
+    font-style: normal;
+    color: var(--sintegra);
+  }
+
+  .login-idara .brand p.lead {
+    margin: 0;
+    max-width: 28rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: rgba(244, 255, 244, 0.78);
+  }
+
+  .login-idara .steps {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .login-idara .steps li {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid rgba(183, 238, 226, 0.28);
+    color: var(--sintegra);
+  }
+
+  .login-idara .endorsement {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(244, 255, 244, 0.14);
+    font-size: 0.78rem;
+    color: rgba(244, 255, 244, 0.78);
+  }
+
+  .login-idara .endorsement b {
+    color: var(--bruma);
+    font-weight: 500;
+  }
+
+  .login-idara .endorsement .dot {
+    color: var(--quantum);
+    margin: 0 0.45rem;
+  }
+
+  .login-idara .by-idara {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 0.6rem;
-    margin-bottom: 2.25rem;
+    white-space: nowrap;
   }
 
-  .login-idara .wordmark .icon {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 10px;
-    background: var(--accent-cyan);
+  /* IDara horizontal lockup ~1.95:1, at its 100px digital minimum width */
+  .login-idara .by-idara img {
+    width: 100px;
+    height: auto;
+    display: block;
+  }
+
+  /* Form side: the light "paper" register */
+  .login-idara .form-side {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .login-idara .wordmark span {
-    font-weight: 700;
-    font-size: 1.2rem;
-    letter-spacing: -0.01em;
-    color: var(--text-white);
+    padding: 2.5rem 1.5rem;
   }
 
   .login-idara .card {
-    background: var(--bg-nav);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 20px;
-    padding: 2rem 2rem 2.25rem;
-    box-shadow: 0 24px 60px -24px rgba(6, 16, 12, 0.65);
+    width: 100%;
+    max-width: 24rem;
+    background: #ffffff;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    padding: 2.25rem 2rem;
   }
 
   .login-idara .eyebrow {
@@ -85,21 +178,21 @@ const IDARA_STYLES = `
     font-size: 0.72rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--accent-cyan);
-    margin: 0 0 0.5rem;
+    color: var(--ink-soft);
+    margin: 0 0 0.6rem;
   }
 
   .login-idara h1 {
     font-weight: 700;
-    font-size: 1.6rem;
+    font-size: 1.75rem;
     line-height: 1.2;
-    color: var(--text-white);
-    margin: 0 0 1.65rem;
+    margin: 0 0 0.4rem;
   }
 
-  .login-idara h1 em {
-    font-style: normal;
-    color: var(--text-mint);
+  .login-idara .hint {
+    margin: 0 0 1.75rem;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
   }
 
   .login-idara label {
@@ -109,61 +202,58 @@ const IDARA_STYLES = `
 
   .login-idara label span {
     display: block;
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 500;
-    color: var(--text-muted);
+    color: var(--ink-soft);
     margin-bottom: 0.4rem;
   }
 
   .login-idara input {
     width: 100%;
-    background: rgba(9, 22, 17, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 10px;
-    padding: 0.65rem 0.85rem;
+    background: #ffffff;
+    border: 1px solid rgba(10, 64, 50, 0.24);
+    border-radius: 8px;
+    padding: 0.7rem 0.85rem;
     font-family: inherit;
-    font-size: 0.92rem;
-    color: var(--text-white);
+    font-size: 0.95rem;
+    color: var(--core);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  .login-idara input::placeholder {
-    color: rgba(246, 255, 245, 0.35);
   }
 
   .login-idara input:focus {
     outline: none;
-    border-color: var(--accent-cyan);
-    box-shadow: 0 0 0 3px rgba(144, 218, 230, 0.22);
+    border-color: var(--core);
+    box-shadow: 0 0 0 3px rgba(119, 220, 232, 0.45);
   }
 
   .login-idara .error {
-    background: rgba(255, 138, 128, 0.12);
-    border: 1px solid rgba(255, 138, 128, 0.3);
-    color: #FFC4BE;
-    font-size: 0.82rem;
-    line-height: 1.4;
-    border-radius: 10px;
-    padding: 0.65rem 0.85rem;
+    background: rgba(168, 68, 63, 0.08);
+    border-left: 3px solid #a8443f;
+    color: #7f2f2b;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    border-radius: 6px;
+    padding: 0.7rem 0.85rem;
     margin: -0.15rem 0 1.1rem;
   }
 
+  /* Azul Quantum pill: the only action color, with Verde Core text (7.4:1) */
   .login-idara button[type="submit"] {
     width: 100%;
-    background: var(--accent-cyan);
-    color: var(--bg-deep);
-    font-family: inherit;
+    background: var(--quantum);
+    color: var(--core);
+    font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
     font-weight: 600;
     font-size: 0.95rem;
     border: none;
     border-radius: 999px;
-    padding: 0.75rem 1rem;
+    padding: 0.8rem 1rem;
     cursor: pointer;
     transition: filter 0.15s ease, transform 0.1s ease;
   }
 
   .login-idara button[type="submit"]:hover:not(:disabled) {
-    filter: brightness(1.06);
+    filter: brightness(1.05);
   }
 
   .login-idara button[type="submit"]:active:not(:disabled) {
@@ -177,25 +267,45 @@ const IDARA_STYLES = `
 
   .login-idara button:focus-visible,
   .login-idara input:focus-visible {
-    outline: 2px solid var(--accent-cyan);
+    outline: 2px solid var(--core);
     outline-offset: 2px;
   }
 
-  .login-idara .trust {
-    margin-top: 1.75rem;
+  .login-idara .card-footer {
+    margin: 1.5rem 0 0;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
     text-align: center;
-    font-size: 0.74rem;
-    color: var(--text-muted);
   }
 
-  .login-idara .trust b {
-    color: var(--text-white);
-    font-weight: 600;
-  }
-
-  .login-idara .trust .dot {
-    color: var(--accent-cyan);
-    margin: 0 0.5rem;
+  /* Phones and narrow tablets: brand panel becomes a compact header */
+  @media (max-width: 860px) {
+    .login-idara {
+      grid-template-columns: 1fr;
+    }
+    .login-idara .brand {
+      gap: 1.25rem;
+      padding: 1.75rem 1.5rem 2rem;
+    }
+    .login-idara .product-logo {
+      width: 180px;
+    }
+    .login-idara .brand h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0;
+    }
+    .login-idara .brand p.lead,
+    .login-idara .steps,
+    .login-idara .endorsement {
+      display: none;
+    }
+    .login-idara .form-side {
+      align-items: flex-start;
+      padding: 1.75rem 1rem 2.5rem;
+    }
+    .login-idara .card {
+      padding: 1.75rem 1.4rem;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -243,21 +353,43 @@ export default function Login() {
   return (
     <div className="login-idara">
       <style>{IDARA_STYLES}</style>
-      <div className="watermark" aria-hidden="true" />
 
-      <div className="panel">
-        <div className="wordmark">
-          <span className="icon">
-            <CreditCard size={18} strokeWidth={2.25} color="#112921" />
-          </span>
-          <span>ID Issuance</span>
+      <section className="brand" aria-label="ID Issuance">
+        <img className="product-logo" src="/brand/idara-issuance-white.svg" alt="ID Issuance" />
+
+        <div>
+          <p className="tagline">Where identity simplifies access</p>
+          <h2>
+            Emite y personaliza credenciales <em>desde un solo panel</em>
+          </h2>
+          <p className="lead">
+            Selecciona la organización, configura el perfil de producción y envía cada tarjeta a la impresora
+            Fargo correcta, con seguimiento de su estado.
+          </p>
+          <ul className="steps" aria-label="Flujo de emisión">
+            <li>Organización</li>
+            <li>Perfil</li>
+            <li>Parámetros</li>
+            <li>Impresión</li>
+          </ul>
         </div>
 
+        <div className="endorsement">
+          <span>
+            <b>HID</b> Fargo Connect<span className="dot">•</span>Construido por <b>RISI Technologies</b>
+          </span>
+          <span className="by-idara">
+            Ecosistema
+            <img src="/brand/idara-horizontal-white.svg" alt="IDara" />
+          </span>
+        </div>
+      </section>
+
+      <div className="form-side">
         <form onSubmit={handleSubmit} className="card">
-          <p className="eyebrow">Acceso</p>
-          <h1>
-            Inicia <em>sesión</em>
-          </h1>
+          <p className="eyebrow">Acceso al panel</p>
+          <h1>Inicia sesión</h1>
+          <p className="hint">Usa la cuenta que te asignó el administrador de tu organización.</p>
 
           <label>
             <span>Usuario</span>
@@ -279,16 +411,18 @@ export default function Login() {
             />
           </label>
 
-          {error && <p className="error">{error}</p>}
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
 
           <button type="submit" disabled={submitting || !username || !password}>
             {submitting ? "Ingresando…" : "Ingresar →"}
           </button>
-        </form>
 
-        <p className="trust">
-          <b>HID</b> Fargo Connect Card Services<span className="dot">•</span>Construido por <b>RISI Technologies</b>
-        </p>
+          <p className="card-footer">¿Problemas para entrar? Contacta al administrador de ID Issuance.</p>
+        </form>
       </div>
     </div>
   );
