@@ -13,6 +13,7 @@ import type {
   ProductionProfileParameter,
 } from "../api/types";
 import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
+import { KIOSK_DEFAULT_BG, KIOSK_DEFAULT_PRIMARY, resolveKioskTheme } from "../lib/kioskTheme";
 
 interface AvailableField {
   name: string;
@@ -85,8 +86,8 @@ export default function FlowBuilder() {
   const [loadingDestinations, setLoadingDestinations] = useState(false);
   const [publicEnabled, setPublicEnabled] = useState(false);
   const [savedSlug, setSavedSlug] = useState<string | null>(null);
-  const DEFAULT_PRIMARY = "#2E4A46";
-  const DEFAULT_BG = "#F2F6F5";
+  const DEFAULT_PRIMARY = KIOSK_DEFAULT_PRIMARY;
+  const DEFAULT_BG = KIOSK_DEFAULT_BG;
   const [themePrimaryColor, setThemePrimaryColor] = useState(DEFAULT_PRIMARY);
   const [themeBackgroundColor, setThemeBackgroundColor] = useState(DEFAULT_BG);
   const [themeLogoText, setThemeLogoText] = useState("");
@@ -237,8 +238,10 @@ export default function FlowBuilder() {
     setDestination(flow.destination ?? "");
     setPublicEnabled(flow.publicEnabled ?? false);
     setSavedSlug(flow.publicSlug ?? null);
-    setThemePrimaryColor(flow.theme?.primaryColor || DEFAULT_PRIMARY);
-    setThemeBackgroundColor(flow.theme?.backgroundColor || DEFAULT_BG);
+    // Flows saved with the pre-BrandBook defaults open with the official ones.
+    const resolvedTheme = resolveKioskTheme(flow.theme);
+    setThemePrimaryColor(resolvedTheme.primaryColor);
+    setThemeBackgroundColor(resolvedTheme.backgroundColor);
     setThemeLogoText(flow.theme?.logoText ?? "");
     setIdentifierEnabled(flow.identifierEnabled ?? false);
     setIdentifierLabel(flow.identifierLabel ?? "");
@@ -677,7 +680,7 @@ export default function FlowBuilder() {
               </p>
               <div className="flex flex-wrap gap-6">
                 <label className="block">
-                  <span className="block text-xs text-muted mb-1">Color principal (botones, acentos)</span>
+                  <span className="block text-xs text-muted mb-1">Color principal (franja superior, botones)</span>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -700,6 +703,19 @@ export default function FlowBuilder() {
                     <span className="text-xs font-mono text-muted">{themeBackgroundColor}</span>
                   </div>
                 </label>
+                {(themePrimaryColor.toLowerCase() !== DEFAULT_PRIMARY.toLowerCase() ||
+                  themeBackgroundColor.toLowerCase() !== DEFAULT_BG.toLowerCase()) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setThemePrimaryColor(DEFAULT_PRIMARY);
+                      setThemeBackgroundColor(DEFAULT_BG);
+                    }}
+                    className="self-end text-xs text-muted hover:text-ink underline underline-offset-2 pb-2"
+                  >
+                    Usar colores de IDara
+                  </button>
+                )}
               </div>
               <label className="block max-w-xs mt-3">
                 <span className="block text-xs text-muted mb-1">Nombre mostrado en el kiosco (opcional)</span>
