@@ -163,7 +163,7 @@ export default function PendingQueuePanel({
           {onManualEntry && (
             <button
               onClick={onManualEntry}
-              className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm shrink-0"
+              className="btn-primary px-4 py-2 text-sm shrink-0"
             >
               + Registrar manualmente
             </button>
@@ -248,7 +248,7 @@ export default function PendingQueuePanel({
             <button
               type="button"
               onClick={() => loadPendingPage(0, pendingSearchInput)}
-              className="text-xs border border-border px-3 py-2 rounded hover:border-brand/50 transition-colors"
+              className="text-xs border border-border px-3 py-2 rounded-full hover:border-brand/50 transition-colors"
             >
               Buscar
             </button>
@@ -290,7 +290,7 @@ export default function PendingQueuePanel({
                       <button
                         onClick={handleSavePendingEdit}
                         disabled={savingPendingEdit}
-                        className="bg-brand text-white font-medium px-4 py-1.5 rounded text-xs hover:bg-brand-dim transition-colors disabled:opacity-50"
+                        className="btn-primary px-4 py-1.5 text-xs disabled:opacity-50"
                       >
                         {savingPendingEdit ? "Guardando…" : "Guardar"}
                       </button>
@@ -337,7 +337,7 @@ export default function PendingQueuePanel({
             <button
               onClick={() => loadPendingPage(pendingPage.number - 1, pendingSearchInput)}
               disabled={pendingPage.number === 0}
-              className="border border-border px-3 py-1.5 rounded hover:border-brand/50 transition-colors disabled:opacity-50"
+              className="border border-border px-3 py-1.5 rounded-full hover:border-brand/50 transition-colors disabled:opacity-50"
             >
               ← Anterior
             </button>
@@ -347,7 +347,7 @@ export default function PendingQueuePanel({
             <button
               onClick={() => loadPendingPage(pendingPage.number + 1, pendingSearchInput)}
               disabled={pendingPage.number + 1 >= pendingPage.totalPages}
-              className="border border-border px-3 py-1.5 rounded hover:border-brand/50 transition-colors disabled:opacity-50"
+              className="border border-border px-3 py-1.5 rounded-full hover:border-brand/50 transition-colors disabled:opacity-50"
             >
               Siguiente →
             </button>
@@ -359,7 +359,7 @@ export default function PendingQueuePanel({
         <div className="pt-2 border-t border-border">
           <button
             onClick={onBack}
-            className="border border-border px-4 py-2 rounded text-sm text-muted hover:text-ink transition-colors"
+            className="border border-border px-4 py-2 rounded-full text-sm text-muted hover:text-ink transition-colors"
           >
             {backLabel}
           </button>

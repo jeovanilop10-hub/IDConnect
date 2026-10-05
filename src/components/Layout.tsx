@@ -60,21 +60,19 @@ export default function Layout() {
 
   const sidebarContent = (
     <>
-      <div className="px-5 py-6 border-b border-border flex items-center justify-between">
+      <div className="px-5 py-6 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <span className="w-9 h-9 rounded-lg bg-brand flex items-center justify-center shrink-0">
-            <CreditCard size={18} strokeWidth={2} className="text-white" />
+          <span className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center shrink-0">
+            <CreditCard size={18} strokeWidth={2} className="text-shell-deep" />
           </span>
           <div>
-            <span className="font-display font-bold tracking-tight text-lg text-ink block leading-tight">
-              ID Issuance
-            </span>
-            <span className="text-muted text-xs">Panel de emisión</span>
+            <span className="font-display font-bold text-lg text-shell-text block leading-tight">ID Issuance</span>
+            <span className="font-mono uppercase text-[10px] tracking-[0.1em] text-accent">Panel de emisión</span>
           </div>
         </div>
         <button
           onClick={() => setMobileOpen(false)}
-          className="lg:hidden text-muted hover:text-ink transition-colors"
+          className="lg:hidden text-shell-muted hover:text-shell-text transition-colors"
           aria-label="Cerrar menú"
         >
           <X size={20} />
@@ -90,16 +88,18 @@ export default function Layout() {
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                [
-                  "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors",
-                  isActive
-                    ? item.accent
-                      ? "bg-brand text-white font-medium"
-                      : "bg-brand/10 text-brand font-medium"
-                    : item.accent
-                    ? "text-brand border border-brand/30 hover:bg-brand/10"
-                    : "text-muted hover:text-ink hover:bg-surface-alt",
-                ].join(" ")
+                item.accent
+                  ? // The main action: IDara's cyan pill, set apart from the plain links.
+                    [
+                      "btn-primary gap-2 px-4 py-2.5 text-sm mt-4",
+                      isActive ? "ring-2 ring-offset-2 ring-offset-shell-deep ring-accent/60" : "",
+                    ].join(" ")
+                  : [
+                      "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors border-l-2",
+                      isActive
+                        ? "bg-white/10 text-shell-text font-medium border-accent"
+                        : "text-shell-muted hover:text-shell-text hover:bg-white/5 border-transparent",
+                    ].join(" ")
               }
             >
               <Icon size={17} strokeWidth={2} />
@@ -109,23 +109,23 @@ export default function Layout() {
         })}
       </nav>
 
-      <div className="px-5 py-4 border-t border-border shrink-0">
+      <div className="px-5 py-4 border-t border-white/10 shrink-0">
         {user && (
           <div className="flex items-center justify-between text-xs mb-2">
             <div>
-              <p className="text-ink font-medium">{user.username}</p>
-              <p className="text-muted">{user.role}</p>
+              <p className="text-shell-text font-medium">{user.username}</p>
+              <p className="font-mono uppercase text-[10px] tracking-[0.08em] text-shell-muted">{user.role}</p>
             </div>
             <button
               onClick={logout}
-              className="text-muted hover:text-danger transition-colors flex items-center gap-1"
+              className="text-shell-muted hover:text-shell-text transition-colors flex items-center gap-1"
             >
               <LogOut size={14} />
               Salir
             </button>
           </div>
         )}
-        <p className="text-muted text-xs">backend · /fargo-sdk-example</p>
+        <p className="font-mono text-[10px] text-shell-muted/70">backend · /fargo-sdk-example</p>
       </div>
     </>
   );
@@ -133,16 +133,16 @@ export default function Layout() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Mobile top bar */}
-      <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-border bg-surface sticky top-0 z-30">
+      <div className="shell lg:hidden flex items-center justify-between px-4 py-3 sticky top-0 z-30">
         <div className="flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center shrink-0">
-            <CreditCard size={16} strokeWidth={2} className="text-white" />
+          <span className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shrink-0">
+            <CreditCard size={16} strokeWidth={2} className="text-shell-deep" />
           </span>
-          <span className="font-display font-bold tracking-tight text-ink">ID Issuance</span>
+          <span className="font-display font-bold text-shell-text">ID Issuance</span>
         </div>
         <button
           onClick={() => setMobileOpen(true)}
-          className="text-muted hover:text-ink transition-colors"
+          className="text-shell-muted hover:text-shell-text transition-colors"
           aria-label="Abrir menú"
         >
           <Menu size={22} />
@@ -152,15 +152,15 @@ export default function Layout() {
       {/* Mobile drawer + backdrop */}
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-40 flex">
-          <div className="fixed inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
-          <aside className="relative w-72 max-w-[85vw] bg-surface flex flex-col z-50 shadow-xl">
+          <div className="fixed inset-0 bg-shell-deep/50" onClick={() => setMobileOpen(false)} />
+          <aside className="shell relative w-72 max-w-[85vw] flex flex-col z-50">
             {sidebarContent}
           </aside>
         </div>
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex w-64 shrink-0 border-r border-border bg-surface flex-col">
+      <aside className="shell hidden lg:flex w-64 shrink-0 flex-col lg:sticky lg:top-0 lg:h-screen">
         {sidebarContent}
       </aside>
 

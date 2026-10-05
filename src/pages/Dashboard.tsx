@@ -75,7 +75,7 @@ export default function Dashboard() {
         </div>
         <Link
           to="/nuevo-trabajo"
-          className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors shrink-0"
+          className="btn-primary px-4 py-2 shrink-0"
         >
           Iniciar nuevo trabajo →
         </Link>

@@ -102,7 +102,7 @@ export default function JobDetail() {
               </label>
               <button
                 onClick={reloadResource}
-                className="border border-border px-4 py-2 rounded text-sm hover:border-brand/50 transition-colors"
+                className="border border-border px-4 py-2 rounded-full text-sm hover:border-brand/50 transition-colors"
               >
                 Consultar
               </button>

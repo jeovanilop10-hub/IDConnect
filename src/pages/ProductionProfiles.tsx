@@ -82,7 +82,7 @@ function ProfileDetail({ profileId }: { profileId: string }) {
         <p className="text-brand text-xs font-semibold uppercase tracking-wide">Parámetros configurables</p>
         <Link
           to={`/nuevo-trabajo?profileId=${encodeURIComponent(profileId)}`}
-          className="text-xs bg-brand text-white font-medium px-3 py-1.5 rounded-lg hover:bg-brand-dim transition-colors"
+          className="btn-primary text-xs px-3 py-1.5"
         >
           Usar en nuevo trabajo →
         </Link>

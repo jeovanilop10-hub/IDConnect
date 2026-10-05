@@ -364,7 +364,7 @@ export default function FlowBuilder() {
             <button
               onClick={() => (s === 1 || profileId) && setStage(s)}
               disabled={s !== 1 && !profileId}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
                 s === stage
                   ? "bg-brand text-white font-medium"
                   : s !== 1 && !profileId
@@ -406,7 +406,7 @@ export default function FlowBuilder() {
                 <p className="text-brand text-xs font-semibold uppercase tracking-wide">Flujos de este perfil</p>
                 <button
                   onClick={resetEditor}
-                  className="flex items-center gap-1.5 text-xs bg-brand text-white font-medium px-3 py-1.5 rounded-lg hover:bg-brand-dim transition-colors"
+                  className="btn-primary flex items-center gap-1.5 text-xs px-3 py-1.5"
                 >
                   <Plus size={13} />
                   Nuevo flujo
@@ -438,7 +438,7 @@ export default function FlowBuilder() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => editFlow(flow)}
-                          className="flex items-center gap-1 text-xs border border-border px-2.5 py-1.5 rounded-lg text-muted hover:text-brand hover:border-brand/40 transition-colors"
+                          className="flex items-center gap-1 text-xs border border-border px-2.5 py-1.5 rounded-full text-muted hover:text-brand hover:border-brand/40 transition-colors"
                         >
                           <Pencil size={12} />
                           Editar
@@ -531,7 +531,7 @@ export default function FlowBuilder() {
           <button
             onClick={handleLoadFields}
             disabled={loadingFields}
-            className="text-sm bg-brand text-white font-medium px-4 py-2 rounded-lg hover:bg-brand-dim transition-colors disabled:opacity-50"
+            className="btn-primary text-sm px-4 py-2 disabled:opacity-50"
           >
             {loadingFields ? "Cargando…" : "Cargar parámetros del perfil"}
           </button>
@@ -621,7 +621,7 @@ export default function FlowBuilder() {
               <button
                 key={type}
                 onClick={() => addStep(type)}
-                className="flex items-center gap-1.5 text-xs border border-border px-3 py-1.5 rounded-lg text-muted hover:text-brand hover:border-brand/40 transition-colors"
+                className="flex items-center gap-1.5 text-xs border border-border px-3 py-1.5 rounded-full text-muted hover:text-brand hover:border-brand/40 transition-colors"
               >
                 <Plus size={13} />
                 Paso de {STEP_TYPE_LABELS[type].toLowerCase()}
@@ -827,7 +827,7 @@ export default function FlowBuilder() {
               <button
                 onClick={handleSave}
                 disabled={saving || steps.length === 0}
-                className="bg-brand text-white font-medium px-5 py-2 rounded-lg hover:bg-brand-dim transition-colors text-sm disabled:opacity-50"
+                className="btn-primary px-5 py-2 text-sm disabled:opacity-50"
               >
                 {saving ? "Guardando…" : editingId ? "Guardar cambios" : "Crear flujo"}
               </button>
@@ -844,7 +844,7 @@ function NextButton({ disabled, onClick }: { disabled?: boolean; onClick: () => 
     <button
       disabled={disabled}
       onClick={onClick}
-      className="bg-brand text-white font-medium px-4 py-2 rounded-lg hover:bg-brand-dim transition-colors text-sm disabled:opacity-50"
+      className="btn-primary px-4 py-2 text-sm disabled:opacity-50"
     >
       Siguiente →
     </button>
@@ -855,7 +855,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="border border-border px-4 py-2 rounded-lg text-sm text-muted hover:text-ink transition-colors"
+      className="border border-border px-4 py-2 rounded-full text-sm text-muted hover:text-ink transition-colors"
     >
       ← Atrás
     </button>

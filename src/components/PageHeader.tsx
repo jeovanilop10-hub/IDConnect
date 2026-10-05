@@ -17,7 +17,7 @@ export default function PageHeader({
 }) {
   return (
     <div className="mb-8">
-      <p className="text-muted text-xs mb-3">{eyebrow}</p>
+      <p className="font-mono uppercase text-[11px] tracking-[0.1em] text-brand mb-3">{eyebrow}</p>
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div className="flex items-start gap-2 min-w-0">
           {back && (
@@ -30,7 +30,7 @@ export default function PageHeader({
             </Link>
           )}
           <div className="min-w-0">
-            <h1 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-ink">{title}</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-ink">{title}</h1>
             {description && <p className="text-muted text-sm mt-2 max-w-xl">{description}</p>}
           </div>
         </div>

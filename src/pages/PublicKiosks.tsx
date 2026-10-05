@@ -46,7 +46,7 @@ export default function PublicKiosks() {
                   </div>
                   <button
                     onClick={() => handleCopy(flow.id!, flow.publicSlug!)}
-                    className="flex items-center gap-1.5 text-xs border border-border px-3 py-1.5 rounded-lg text-muted hover:text-brand hover:border-brand/40 transition-colors shrink-0"
+                    className="flex items-center gap-1.5 text-xs border border-border px-3 py-1.5 rounded-full text-muted hover:text-brand hover:border-brand/40 transition-colors shrink-0"
                   >
                     {copiedId === flow.id ? (
                       <>

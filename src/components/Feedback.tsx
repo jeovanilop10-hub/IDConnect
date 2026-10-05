@@ -16,7 +16,7 @@ export function ErrorBanner({ message, onRetry }: { message: string; onRetry?: (
       {onRetry && (
         <button
           onClick={onRetry}
-          className="shrink-0 border border-danger/50 px-3 py-1 rounded hover:bg-danger/20 transition-colors"
+          className="shrink-0 border border-danger/50 px-3 py-1 rounded-full hover:bg-danger/20 transition-colors"
         >
           Reintentar
         </button>

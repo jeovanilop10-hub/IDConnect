@@ -231,7 +231,7 @@ export default function NewJob() {
           <p className="font-mono text-sm text-muted mb-4">{submittedJobId}</p>
           <button
             onClick={() => navigate(`/trabajos/${encodeURIComponent(submittedJobId)}`)}
-            className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm"
+            className="btn-primary px-4 py-2 text-sm"
           >
             Ver detalle del trabajo →
           </button>
@@ -502,7 +502,7 @@ export default function NewJob() {
               <button
                 onClick={handleConfigure}
                 disabled={submitting}
-                className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm disabled:opacity-50"
+                className="btn-primary px-4 py-2 text-sm disabled:opacity-50"
               >
                 {submitting ? "Configurando…" : "Configurar perfil →"}
               </button>
@@ -575,7 +575,7 @@ export default function NewJob() {
               <button
                 onClick={handleSubmitJob}
                 disabled={!canSubmit}
-                className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm disabled:opacity-50"
+                className="btn-primary px-4 py-2 text-sm disabled:opacity-50"
               >
                 {submitting ? "Enviando…" : "Enviar trabajo →"}
               </button>
@@ -648,7 +648,7 @@ function Stepper({
         <div key={s} className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => s < current && onJump(s)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${
               s === current
                 ? "bg-brand text-white font-medium"
                 : s < current
@@ -671,7 +671,7 @@ function NextButton({ disabled, onClick }: { disabled?: boolean; onClick: () => 
     <button
       disabled={disabled}
       onClick={onClick}
-      className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm disabled:opacity-50"
+      className="btn-primary px-4 py-2 text-sm disabled:opacity-50"
     >
       Siguiente →
     </button>
@@ -682,7 +682,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="border border-border px-4 py-2 rounded text-sm text-muted hover:text-ink transition-colors"
+      className="border border-border px-4 py-2 rounded-full text-sm text-muted hover:text-ink transition-colors"
     >
       ← Atrás
     </button>

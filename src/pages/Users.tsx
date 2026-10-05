@@ -138,7 +138,7 @@ export default function Users() {
         <button
           onClick={handleCreate}
           disabled={creating || !username || password.length < 8 || (role === "CLIENT" && !organizationId)}
-          className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm disabled:opacity-50"
+          className="btn-primary px-4 py-2 text-sm disabled:opacity-50"
         >
           {creating ? "Creando…" : "Crear cuenta"}
         </button>
@@ -181,7 +181,7 @@ export default function Users() {
                       {u.role === "OPERATIONAL" && (
                         <button
                           onClick={() => startEditingFlows(u.id, u.flowIds)}
-                          className="text-xs border border-border px-3 py-1.5 rounded text-muted hover:text-brand hover:border-brand/40 transition-colors"
+                          className="text-xs border border-border px-3 py-1.5 rounded-full text-muted hover:text-brand hover:border-brand/40 transition-colors"
                         >
                           {(u.flowIds?.length ?? 0)} flujo(s) — editar
                         </button>
@@ -189,7 +189,7 @@ export default function Users() {
                       {u.enabled && (
                         <button
                           onClick={() => handleDisable(u.id)}
-                          className="text-xs border border-border px-3 py-1.5 rounded text-muted hover:text-danger hover:border-danger/40 transition-colors"
+                          className="text-xs border border-border px-3 py-1.5 rounded-full text-muted hover:text-danger hover:border-danger/40 transition-colors"
                         >
                           Deshabilitar
                         </button>
@@ -211,7 +211,7 @@ export default function Users() {
                             <button
                               onClick={handleSaveFlows}
                               disabled={savingFlows}
-                              className="bg-brand text-white font-medium px-4 py-1.5 rounded text-xs hover:bg-brand-dim transition-colors disabled:opacity-50"
+                              className="btn-primary px-4 py-1.5 text-xs disabled:opacity-50"
                             >
                               {savingFlows ? "Guardando…" : "Guardar"}
                             </button>

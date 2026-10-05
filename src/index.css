@@ -11,17 +11,39 @@ body {
 }
 
 ::selection {
-  background: rgba(31, 75, 59, 0.18);
+  background: rgba(144, 218, 230, 0.45);
 }
 
-/* Card container — light, rounded, subtle border. Used as the primary
-   content container across all pages (replaces an earlier dark "ticket
-   stub" look with the clean panel style from the reference design). */
+/* Card container — "product paper": white, 1px hairline, 8px radius, no
+   shadow. The primary content container across all pages. */
 .stub {
   position: relative;
   background: theme("colors.surface");
   border: 1px solid theme("colors.border");
-  border-radius: 12px;
+  border-radius: 8px;
+}
+
+/* Dark navigation shell: IDara's forest-green gradient. */
+.shell {
+  background: radial-gradient(120% 90% at 0% 0%, theme("colors.shell.mid") 0%, theme("colors.shell.deep") 70%);
+  color: theme("colors.shell.text");
+}
+
+/* Uppercase tracked data label (monospace is reserved for data/system chrome). */
+.data-label {
+  @apply font-mono uppercase text-[11px] tracking-[0.08em] text-muted;
+}
+
+/* Primary action: IDara cyan pill with dark text — the only filled action color.
+   Kiosk screens keep their own bg-brand buttons so a flow's colors still apply. */
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-full bg-accent text-shell-deep font-semibold transition-[filter,background-color];
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+.btn-primary:focus-visible {
+  @apply outline-none ring-2 ring-offset-2 ring-brand;
 }
 
 /* Muted info box with a label above a bold value — matches the
@@ -30,24 +52,25 @@ body {
   @apply bg-surface-alt border border-border rounded-lg px-4 py-3;
 }
 .field-box .field-label {
-  @apply text-muted text-xs mb-1;
+  @apply font-mono uppercase text-[11px] tracking-[0.08em] text-muted mb-1;
 }
 .field-box .field-value {
   @apply text-ink font-semibold text-sm;
 }
 
-/* Dark section header bar — matches the "ACT T100 Subscription" banner. */
+/* Dark section header bar — the shell's dark register inside the page. */
 .section-bar {
-  @apply bg-brand text-white font-semibold px-4 py-3 rounded-lg flex items-center justify-between;
+  @apply text-shell-text font-semibold px-4 py-3 rounded-lg flex items-center justify-between;
+  background: linear-gradient(90deg, theme("colors.shell.deep"), theme("colors.shell.mid"));
 }
 
-/* Table with a colored header row — matches the Usuarios table. */
+/* Table: tinted header with monospace data labels, hairline rows, no zebra. */
 .data-table {
   @apply w-full text-sm border-separate;
   border-spacing: 0;
 }
 .data-table thead th {
-  @apply bg-sage text-white text-left text-xs uppercase tracking-wide font-semibold px-4 py-3;
+  @apply bg-surface-alt text-muted text-left font-mono text-[11px] uppercase tracking-[0.08em] font-medium px-4 py-3 border-b border-border;
 }
 .data-table thead th:first-child {
   border-top-left-radius: 8px;
@@ -55,7 +78,7 @@ body {
 .data-table thead th:last-child {
   border-top-right-radius: 8px;
 }
-.data-table tbody tr:nth-child(even) {
+.data-table tbody tr:hover {
   @apply bg-surface-alt;
 }
 .data-table tbody td {
@@ -75,8 +98,8 @@ body {
 }
 
 .input {
-  @apply bg-surface border border-border rounded px-3 py-1.5 text-sm text-ink;
+  @apply bg-surface border border-border rounded-lg px-3 py-2 text-sm text-ink;
 }
 .input:focus {
-  @apply outline-none border-brand/50 ring-1 ring-brand/20;
+  @apply outline-none border-brand/60 ring-2 ring-brand/15;
 }

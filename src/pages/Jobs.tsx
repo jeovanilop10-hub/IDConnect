@@ -42,7 +42,7 @@ export default function Jobs() {
         action={
           <Link
             to="/nuevo-trabajo"
-            className="bg-brand text-white font-medium px-4 py-2 rounded hover:bg-brand-dim transition-colors text-sm"
+            className="btn-primary px-4 py-2 text-sm"
           >
             + Nuevo trabajo
           </Link>
@@ -113,7 +113,7 @@ export default function Jobs() {
 
           <button
             onClick={reload}
-            className="border border-border px-4 py-2 rounded text-sm hover:border-brand/50 transition-colors"
+            className="border border-border px-4 py-2 rounded-full text-sm hover:border-brand/50 transition-colors"
           >
             Buscar
           </button>
