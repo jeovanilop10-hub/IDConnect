@@ -1,16 +1,8 @@
 import { Lock } from "lucide-react";
 import type { RequestParameter } from "../api/types";
 import { fileToBase64 } from "../lib/image";
-import { inSentence } from "../lib/text";
+import { inSentence, paramValueText } from "../lib/text";
 
-// Guards against showing a literal "null"/"undefined" string in the input —
-// can happen if the API sends back a stringified null instead of a real
-// JSON null for an unset value.
-function sanitize(raw: unknown): string {
-  if (raw == null) return "";
-  const str = String(raw);
-  return /^(null|undefined)$/i.test(str.trim()) ? "" : str;
-}
 
 export default function RequestParameterField({
   param,
@@ -32,7 +24,7 @@ export default function RequestParameterField({
 }) {
   const data = param.parameter ?? {};
   const dataType = param.dataType ?? data.dataType ?? "Text";
-  const value = sanitize(data.value);
+  const value = paramValueText(data.value);
   const kiosk = variant === "kiosk";
   const inputClassName = [
     "input w-full",

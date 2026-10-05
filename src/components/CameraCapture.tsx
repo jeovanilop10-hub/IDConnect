@@ -42,10 +42,14 @@ export default function CameraCapture({
           return;
         }
         streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+        const video = videoRef.current;
+        if (video) {
+          video.srcObject = stream;
+          // autoPlay alone doesn't always start a live stream after the
+          // permission prompt (iPad Safari, some kiosk browsers).
+          await video.play().catch(() => {});
         }
-        setCameraReady(true);
+        if (!cancelled) setCameraReady(true);
       } catch {
         if (!cancelled) {
           setCameraError(

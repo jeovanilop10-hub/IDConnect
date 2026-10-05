@@ -4,6 +4,7 @@ import { ErrorBanner, Loading } from "./Feedback";
 import CameraCapture from "./CameraCapture";
 import RequestParameterField from "./RequestParameterField";
 import type { FlowStep, ProductionRequestTemplate } from "../api/types";
+import { paramValueText } from "../lib/text";
 
 export default function GuidedFlowRunner({
   steps,
@@ -117,7 +118,7 @@ export default function GuidedFlowRunner({
   function findParamValue(name: string): string {
     for (const service of template?.services ?? []) {
       for (const p of service.parameters ?? []) {
-        if (p.parameter?.name === name) return p.parameter.value != null ? String(p.parameter.value) : "";
+        if (p.parameter?.name === name) return paramValueText(p.parameter.value);
       }
     }
     return "";
