@@ -6,6 +6,7 @@ import GuidedFlowRunner from "../components/GuidedFlowRunner";
 import { ApiError, publicFlowApi } from "../api/client";
 import { darkenHex, hexToRgbTriplet } from "../lib/color";
 import { resolveKioskTheme } from "../lib/kioskTheme";
+import { inSentence } from "../lib/text";
 import type { PublicFlow } from "../api/types";
 
 // A kiosk is a shared device: after this long without a touch or key the
@@ -207,7 +208,7 @@ export default function PublicCapture() {
             >
               <p className="data-label mb-2">Bienvenido</p>
               <h1 className="font-display text-2xl sm:text-[1.75rem] leading-tight font-bold text-ink mb-2">
-                {flow.identifierLabel ? `Escribe tu ${flow.identifierLabel.toLowerCase()}` : "Escribe tu identificador"}
+                {flow.identifierLabel ? `Escribe tu ${inSentence(flow.identifierLabel)}` : "Escribe tu identificador"}
               </h1>
               <p className="text-muted text-base mb-6">
                 Con él buscamos tus datos para llenar el formulario por ti. Solo tendrás que revisarlos y tomarte la foto.

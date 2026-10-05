@@ -1,6 +1,7 @@
 import { Lock } from "lucide-react";
 import type { RequestParameter } from "../api/types";
 import { fileToBase64 } from "../lib/image";
+import { inSentence } from "../lib/text";
 
 // Guards against showing a literal "null"/"undefined" string in the input —
 // can happen if the API sends back a stringified null instead of a real
@@ -158,7 +159,7 @@ export default function RequestParameterField({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={readOnly ? undefined : `Escribe tu ${fieldName.toLowerCase()}`}
+        placeholder={readOnly ? undefined : `Escribe tu ${inSentence(fieldName)}`}
         readOnly={readOnly}
         enterKeyHint="next"
         className={inputClassName}
