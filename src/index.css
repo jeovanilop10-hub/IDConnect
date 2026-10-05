@@ -11,7 +11,12 @@ body {
 }
 
 ::selection {
-  background: rgba(144, 218, 230, 0.45);
+  background: rgba(119, 220, 232, 0.45); /* Azul Quantum */
+}
+
+/* Data labels and IDs: IBM Plex Sans (see tailwind.config.js) with aligned figures. */
+.font-mono {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Card container — "product paper": white, 1px hairline, 8px radius, no
@@ -23,9 +28,9 @@ body {
   border-radius: 8px;
 }
 
-/* Dark navigation shell: IDara's forest-green gradient. */
+/* Dark navigation shell: the official Verde Core → Obsidiana gradient. */
 .shell {
-  background: radial-gradient(120% 90% at 0% 0%, theme("colors.shell.mid") 0%, theme("colors.shell.deep") 70%);
+  background: linear-gradient(170deg, theme("colors.shell.mid") 0%, theme("colors.shell.deep") 100%);
   color: theme("colors.shell.text");
 }
 
@@ -34,10 +39,10 @@ body {
   @apply font-mono uppercase text-[11px] tracking-[0.08em] text-muted;
 }
 
-/* Primary action: IDara cyan pill with dark text — the only filled action color.
+/* Primary action: Azul Quantum pill with Obsidiana text (12.3:1) — the only filled action color.
    Kiosk screens keep their own bg-brand buttons so a flow's colors still apply. */
 .btn-primary {
-  @apply inline-flex items-center justify-center rounded-full bg-accent text-shell-deep font-semibold transition-[filter,background-color];
+  @apply inline-flex items-center justify-center rounded-full bg-accent text-shell-deep font-display font-semibold transition-[filter,background-color];
 }
 .btn-primary:hover:not(:disabled) {
   filter: brightness(1.06);

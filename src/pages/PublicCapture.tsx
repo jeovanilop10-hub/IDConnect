@@ -113,7 +113,7 @@ export default function PublicCapture() {
             <rect x="38" y="24" width="24" height="5" rx="2.5" fill="white" fillOpacity="0.85" />
             <rect x="38" y="34" width="24" height="5" rx="2.5" fill="white" fillOpacity="0.6" />
             <rect x="14" y="46" width="46" height="5" rx="2.5" fill="white" fillOpacity="0.5" />
-            <text x="88" y="47" fontFamily="Poppins, Inter, sans-serif" fontWeight="700" fontSize="34" fill="currentColor">
+            <text x="88" y="47" fontFamily="IBM Plex Sans, Segoe UI, Arial, sans-serif" fontWeight="700" fontSize="34" fill="currentColor">
               ID Issuance
             </text>
           </svg>
