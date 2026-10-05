@@ -20,7 +20,7 @@ const IDARA_STYLES = `
     min-height: 100vh;
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-    background: var(--bruma);
+    background: #ffffff;
     font-family: "Roboto", "Segoe UI", Arial, sans-serif;
     color: var(--core);
   }

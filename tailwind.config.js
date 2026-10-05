@@ -15,12 +15,12 @@ export default {
         // --kiosk-bg-rgb/--kiosk-brand-*-rgb on its own wrapper to reskin
         // just that screen, without touching the rest of the app (which
         // never sets those variables).
-        bg: "rgb(var(--kiosk-bg-rgb, 244 255 244) / <alpha-value>)", // Verde Bruma
+        bg: "rgb(var(--kiosk-bg-rgb, 255 255 255) / <alpha-value>)", // white
         surface: "#FFFFFF",
-        "surface-alt": "#EDFBF8", // Síntegra at 25% on white
+        "surface-alt": "#F5F7F7", // Verde Core at 4% on white: near-neutral, not visibly green
         border: "#E2E8E6", // Verde Core at 12% on white
         ink: "#0A4032", // Verde Core
-        muted: "#4F756B", // Verde Core at 72% on white; >= 4.5:1 on every light surface
+        muted: "#4F756B", // Verde Core at 72% on white; >= 4.5:1 on white and surface-alt
         brand: {
           DEFAULT: "rgb(var(--kiosk-brand-rgb, 10 64 50) / <alpha-value>)", // Verde Core
           dim: "rgb(var(--kiosk-brand-dim-rgb, 2 15 10) / <alpha-value>)", // Verde Obsidiana
